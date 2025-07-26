@@ -1,0 +1,16 @@
+# Global ignores
+.env
+.env.*   # In case you have .env.production, etc.
+node_modules/
+dist/
+db-data/       # For local database persistence
+.vscode/
+.idea/
+.DS_Store
+
+# Log files
+*.log
+
+# Docker artifacts
+*.local
+docker-compose.override.yml

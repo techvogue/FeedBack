@@ -1,0 +1,29 @@
+# Node dependencies
+node_modules/
+
+# Prisma artifacts
+prisma/dev.db
+prisma/dev.db-journal
+prisma/migrations/
+
+# Build output
+dist/
+build/
+
+# Log files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env*
+
+# Uploads/temp (if any used locally; never keep actual uploads here)
+uploads/
+tmp/
+.DS_Store
+
+# IDE files
+.vscode/
+.idea/
