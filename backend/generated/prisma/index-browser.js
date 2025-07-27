@@ -149,6 +149,7 @@ exports.Prisma.FeedbackFormScalarFieldEnum = {
 exports.Prisma.FeedbackResponseScalarFieldEnum = {
   id: 'id',
   eventId: 'eventId',
+  userId: 'userId',
   answers: 'answers',
   submittedAt: 'submittedAt'
 };

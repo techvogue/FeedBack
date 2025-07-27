@@ -218,18 +218,28 @@ const EventDetail = () => {
               ) : (
                 // Public view
                 hasFeedbackForm && (
-                  <Button
-                    variant="contained"
-                    fullWidth
-                    onClick={handleGiveFeedback}
-                    sx={{
-                      py: 2,
-                      backgroundColor: '#27ae60',
-                      '&:hover': { backgroundColor: '#229954' }
-                    }}
-                  >
-                    Give Feedback
-                  </Button>
+                  <>
+                    <Button
+                      variant="contained"
+                      fullWidth
+                      onClick={handleGiveFeedback}
+                      sx={{
+                        py: 2,
+                        backgroundColor: '#27ae60',
+                        '&:hover': { backgroundColor: '#229954' }
+                      }}
+                    >
+                      Give Feedback
+                    </Button>
+                    <Typography variant="body2" sx={{
+                      mt: 1,
+                      textAlign: 'center',
+                      color: '#7f8c8d',
+                      fontSize: '0.9rem'
+                    }}>
+                      Login required to submit feedback
+                    </Typography>
+                  </>
                 )
               )}
 

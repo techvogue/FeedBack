@@ -18,9 +18,17 @@ router.get(
   feedbackController.getFeedbackForm
 );
 
-// Submit feedback response (public)
+// Check if user has already submitted feedback (protected)
+router.get(
+  '/responses/:eventId/check',
+  passport.authenticate('jwt', { session: false }),
+  feedbackController.checkFeedbackSubmission
+);
+
+// Submit feedback response (protected)
 router.post(
   '/responses/:eventId',
+  passport.authenticate('jwt', { session: false }),
   feedbackController.submitFeedbackResponse
 );
 

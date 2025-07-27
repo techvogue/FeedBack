@@ -1,9 +1,9 @@
+import { Box, CircularProgress, Container, Typography } from '@mui/material';
 import React, { useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { Box, Typography, CircularProgress, Container } from '@mui/material';
-import { setCredentials } from '../redux/slices/authSlice';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
+import { setCredentials } from '../redux/slices/authSlice';
 
 const OAuthSuccess = () => {
   const navigate = useNavigate();
@@ -12,32 +12,46 @@ const OAuthSuccess = () => {
 
   useEffect(() => {
     const token = searchParams.get('token');
-    
+
     if (token) {
       // Store the token
       localStorage.setItem('token', token);
-      
+
       // Set credentials in Redux
       dispatch(setCredentials({ token, user: null }));
-      
+
       // Fetch user profile to get complete user data
       const fetchUserProfile = async () => {
         try {
           const response = await axiosInstance.get('/auth/profile');
           const user = response.data;
-          
+
           // Update Redux with complete user data
           dispatch(setCredentials({ token, user }));
-          
-          // Redirect to dashboard
-          navigate('/dashboard', { replace: true });
+
+          // Check for redirect parameter in URL
+          const redirect = searchParams.get('redirect');
+          console.log('OAuth Success - Redirect parameter:', redirect);
+
+          if (redirect) {
+            console.log('Redirecting to:', redirect);
+            navigate(redirect, { replace: true });
+          } else {
+            console.log('No redirect, going to dashboard');
+            navigate('/dashboard', { replace: true });
+          }
         } catch (error) {
           console.error('Failed to fetch user profile:', error);
-          // Still redirect to dashboard even if profile fetch fails
-          navigate('/dashboard', { replace: true });
+          // Check for redirect parameter even if profile fetch fails
+          const redirect = searchParams.get('redirect');
+          if (redirect) {
+            navigate(redirect, { replace: true });
+          } else {
+            navigate('/dashboard', { replace: true });
+          }
         }
       };
-      
+
       fetchUserProfile();
     } else {
       // No token found, redirect to login

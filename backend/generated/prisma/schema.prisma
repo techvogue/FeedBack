@@ -9,14 +9,15 @@ datasource db {
 }
 
 model User {
-  id         String   @id @default(uuid())
-  email      String   @unique
-  password   String? // nullable for OAuth
-  name       String?
-  googleId   String?  @unique
-  profilePic String? // Cloudinary URL
-  createdAt  DateTime @default(now())
-  events     Event[] // User can have multiple Events
+  id                String             @id @default(uuid())
+  email             String             @unique
+  password          String? // nullable for OAuth
+  name              String?
+  googleId          String?            @unique
+  profilePic        String? // Cloudinary URL
+  createdAt         DateTime           @default(now())
+  events            Event[] // User can have multiple Events
+  feedbackResponses FeedbackResponse[] // User can have multiple FeedbackResponses
 }
 
 model Event {
@@ -42,7 +43,9 @@ model FeedbackForm {
 model FeedbackResponse {
   id          String   @id @default(uuid())
   eventId     String
+  userId      String
   answers     Json // [{questionId, answer}]
   submittedAt DateTime @default(now())
   event       Event    @relation(fields: [eventId], references: [id])
+  user        User     @relation(fields: [userId], references: [id])
 }

@@ -1,11 +1,13 @@
 import {
   Alert,
   Box,
+  Button,
   CircularProgress,
   Paper,
   Typography
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { Model } from 'survey-core';
 import 'survey-core/survey-core.min.css';
 import { Survey } from 'survey-react-ui';
@@ -18,6 +20,9 @@ const FeedbackFormRenderer = ({ eventId, onComplete }) => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [eventData, setEventData] = useState(null);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [alreadySubmitted, setAlreadySubmitted] = useState(false);
+  const { user } = useSelector((state) => state.auth);
 
   useEffect(() => {
     const loadForm = async () => {
@@ -31,6 +36,19 @@ const FeedbackFormRenderer = ({ eventId, onComplete }) => {
         }
 
         setEventData(event);
+
+        // Check if user has already submitted feedback
+        try {
+          const checkResponse = await axios.get(`/feedback/responses/${eventId}/check`);
+          if (checkResponse.data.hasSubmitted) {
+            setAlreadySubmitted(true);
+            setSuccess('You have already submitted feedback for this event. Thank you!');
+            return;
+          }
+        } catch (err) {
+          // If check fails, continue with form loading
+          console.log('Could not check submission status:', err);
+        }
 
         // Configure survey for file uploads
         const surveyModel = new Model(schema);
@@ -121,7 +139,8 @@ const FeedbackFormRenderer = ({ eventId, onComplete }) => {
             await axios.post(`/feedback/responses/${eventId}`, {
               answers: sender.data
             });
-            setSuccess('Thank you for your feedback!');
+            setHasSubmitted(true);
+            setSuccess('Thank you for your feedback! Your response has been submitted successfully.');
             if (onComplete) onComplete();
           } catch (err) {
             setError('Failed to submit feedback. Please try again.');
@@ -172,6 +191,55 @@ const FeedbackFormRenderer = ({ eventId, onComplete }) => {
       }}>
         {success}
       </Alert>
+    );
+  }
+
+  if (alreadySubmitted) {
+    return (
+      <Paper sx={{
+        p: 4,
+        background: 'rgba(255,255,255,0.98)',
+        borderRadius: 3,
+        boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+        textAlign: 'center'
+      }}>
+        <Typography variant="h5" sx={{
+          mb: 2,
+          color: '#2c3e50',
+          fontWeight: 'bold'
+        }}>
+          Already Submitted
+        </Typography>
+        <Typography variant="body1" sx={{
+          color: '#7f8c8d',
+          mb: 3
+        }}>
+          You have already submitted feedback for this event. Thank you for your participation!
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+          <Button
+            variant="outlined"
+            onClick={() => window.history.back()}
+            sx={{
+              borderColor: '#3498db',
+              color: '#3498db',
+              '&:hover': { borderColor: '#2980b9', backgroundColor: 'rgba(52, 152, 219, 0.1)' }
+            }}
+          >
+            Go Back
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => window.location.href = '/'}
+            sx={{
+              backgroundColor: '#27ae60',
+              '&:hover': { backgroundColor: '#229954' }
+            }}
+          >
+            Go to Dashboard
+          </Button>
+        </Box>
+      </Paper>
     );
   }
 

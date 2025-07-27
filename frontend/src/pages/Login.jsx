@@ -1,25 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { Google } from '@mui/icons-material';
 import {
-  Container,
-  Box,
-  Typography,
-  TextField,
-  Button,
   Alert,
+  Box,
+  Button,
   CircularProgress,
+  Container,
   Divider,
   Paper,
+  TextField,
+  Typography,
 } from '@mui/material';
-import { Google } from '@mui/icons-material';
-import { login, clearError } from '../redux/slices/authSlice';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { clearError, login } from '../redux/slices/authSlice';
 
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   const { loading, error, isAuthenticated } = useSelector((state) => state.auth);
   const [formData, setFormData] = useState({
     email: '',
@@ -28,8 +28,16 @@ const Login = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      const from = location.state?.from?.pathname || '/dashboard';
-      navigate(from, { replace: true });
+      // Check for redirect parameter in URL
+      const urlParams = new URLSearchParams(location.search);
+      const redirect = urlParams.get('redirect');
+
+      if (redirect) {
+        navigate(redirect, { replace: true });
+      } else {
+        const from = location.state?.from?.pathname || '/dashboard';
+        navigate(from, { replace: true });
+      }
     }
   }, [isAuthenticated, navigate, location]);
 
@@ -51,7 +59,17 @@ const Login = () => {
 
   const handleGoogleLogin = () => {
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-    window.location.href = `${apiUrl}/auth/google`;
+    const urlParams = new URLSearchParams(location.search);
+    const redirect = urlParams.get('redirect');
+
+    console.log('Login - Redirect parameter:', redirect);
+
+    const googleUrl = redirect
+      ? `${apiUrl}/auth/google?redirect=${encodeURIComponent(redirect)}`
+      : `${apiUrl}/auth/google`;
+
+    console.log('Google OAuth URL:', googleUrl);
+    window.location.href = googleUrl;
   };
 
   const isFormValid = () => {

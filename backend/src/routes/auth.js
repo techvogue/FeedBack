@@ -18,14 +18,21 @@ router.post('/register', upload.single('profilePicture'), register);
 router.post('/login', login);
 
 // Google OAuth routes
-router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+router.get('/google', (req, res, next) => {
+  // Store redirect parameter in session
+  if (req.query.redirect) {
+    req.session.redirect = req.query.redirect;
+    console.log('Stored redirect in session:', req.query.redirect);
+  }
+  passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
+});
 router.get('/google/callback', passport.authenticate('google', { session: false }), googleCallback);
 
 // Protected routes (require JWT)
 router.get('/profile', passport.authenticate('jwt', { session: false }), getProfile);
-router.post('/profile-picture', 
-  passport.authenticate('jwt', { session: false }), 
-  upload.single('profilePicture'), 
+router.post('/profile-picture',
+  passport.authenticate('jwt', { session: false }),
+  upload.single('profilePicture'),
   updateProfilePicture
 );
 

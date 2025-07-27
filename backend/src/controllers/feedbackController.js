@@ -71,11 +71,35 @@ exports.getFeedbackForm = async (req, res) => {
   }
 };
 
+// Check if user has already submitted feedback
+exports.checkFeedbackSubmission = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const userId = req.user.id;
+
+    // Check if user has already submitted feedback for this event
+    const existingResponse = await prisma.feedbackResponse.findFirst({
+      where: {
+        eventId,
+        userId
+      }
+    });
+
+    res.json({
+      hasSubmitted: !!existingResponse
+    });
+  } catch (error) {
+    console.error('Check feedback submission error:', error);
+    res.status(500).json({ message: 'Failed to check submission status' });
+  }
+};
+
 // Submit feedback response
 exports.submitFeedbackResponse = async (req, res) => {
   try {
     const { eventId } = req.params;
     const { answers } = req.body;
+    const userId = req.user.id;
 
     // Check if event and feedback form exist
     const event = await prisma.event.findUnique({
@@ -91,10 +115,23 @@ exports.submitFeedbackResponse = async (req, res) => {
       return res.status(404).json({ message: 'Feedback form not found' });
     }
 
+    // Check if user has already submitted feedback
+    const existingResponse = await prisma.feedbackResponse.findFirst({
+      where: {
+        eventId,
+        userId
+      }
+    });
+
+    if (existingResponse) {
+      return res.status(400).json({ message: 'You have already submitted feedback for this event' });
+    }
+
     // Save feedback response
     const feedbackResponse = await prisma.feedbackResponse.create({
       data: {
         eventId,
+        userId,
         answers
       }
     });

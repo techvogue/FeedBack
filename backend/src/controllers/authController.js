@@ -165,10 +165,20 @@ const updateProfilePicture = async (req, res) => {
 const googleCallback = async (req, res) => {
   try {
     const token = generateToken(req.user);
-    
-    // Redirect to frontend with token
+
+    // Get the redirect parameter from session
+    const redirect = req.session?.redirect;
+    console.log('Google callback - Redirect from session:', redirect);
+
+    // Clear the redirect from session
+    if (req.session) {
+      delete req.session.redirect;
+    }
+
+    // Redirect to frontend with token and redirect parameter
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-    res.redirect(`${frontendUrl}/oauth-success?token=${token}`);
+    const redirectParam = redirect ? `&redirect=${encodeURIComponent(redirect)}` : '';
+    res.redirect(`${frontendUrl}/oauth-success?token=${token}${redirectParam}`);
   } catch (error) {
     console.error('Google callback error:', error);
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';

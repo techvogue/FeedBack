@@ -1143,10 +1143,12 @@ export namespace Prisma {
 
   export type UserCountOutputType = {
     events: number
+    feedbackResponses: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     events?: boolean | UserCountOutputTypeCountEventsArgs
+    feedbackResponses?: boolean | UserCountOutputTypeCountFeedbackResponsesArgs
   }
 
   // Custom InputTypes
@@ -1165,6 +1167,13 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountEventsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: EventWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountFeedbackResponsesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FeedbackResponseWhereInput
   }
 
 
@@ -1384,6 +1393,7 @@ export namespace Prisma {
     profilePic?: boolean
     createdAt?: boolean
     events?: boolean | User$eventsArgs<ExtArgs>
+    feedbackResponses?: boolean | User$feedbackResponsesArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -1420,6 +1430,7 @@ export namespace Prisma {
   export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "password" | "name" | "googleId" | "profilePic" | "createdAt", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     events?: boolean | User$eventsArgs<ExtArgs>
+    feedbackResponses?: boolean | User$feedbackResponsesArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -1429,6 +1440,7 @@ export namespace Prisma {
     name: "User"
     objects: {
       events: Prisma.$EventPayload<ExtArgs>[]
+      feedbackResponses: Prisma.$FeedbackResponsePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -1833,6 +1845,7 @@ export namespace Prisma {
   export interface Prisma__UserClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     events<T extends User$eventsArgs<ExtArgs> = {}>(args?: Subset<T, User$eventsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    feedbackResponses<T extends User$feedbackResponsesArgs<ExtArgs> = {}>(args?: Subset<T, User$feedbackResponsesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FeedbackResponsePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2278,6 +2291,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: EventScalarFieldEnum | EventScalarFieldEnum[]
+  }
+
+  /**
+   * User.feedbackResponses
+   */
+  export type User$feedbackResponsesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FeedbackResponse
+     */
+    select?: FeedbackResponseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FeedbackResponse
+     */
+    omit?: FeedbackResponseOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FeedbackResponseInclude<ExtArgs> | null
+    where?: FeedbackResponseWhereInput
+    orderBy?: FeedbackResponseOrderByWithRelationInput | FeedbackResponseOrderByWithRelationInput[]
+    cursor?: FeedbackResponseWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: FeedbackResponseScalarFieldEnum | FeedbackResponseScalarFieldEnum[]
   }
 
   /**
@@ -4477,18 +4514,21 @@ export namespace Prisma {
   export type FeedbackResponseMinAggregateOutputType = {
     id: string | null
     eventId: string | null
+    userId: string | null
     submittedAt: Date | null
   }
 
   export type FeedbackResponseMaxAggregateOutputType = {
     id: string | null
     eventId: string | null
+    userId: string | null
     submittedAt: Date | null
   }
 
   export type FeedbackResponseCountAggregateOutputType = {
     id: number
     eventId: number
+    userId: number
     answers: number
     submittedAt: number
     _all: number
@@ -4498,18 +4538,21 @@ export namespace Prisma {
   export type FeedbackResponseMinAggregateInputType = {
     id?: true
     eventId?: true
+    userId?: true
     submittedAt?: true
   }
 
   export type FeedbackResponseMaxAggregateInputType = {
     id?: true
     eventId?: true
+    userId?: true
     submittedAt?: true
   }
 
   export type FeedbackResponseCountAggregateInputType = {
     id?: true
     eventId?: true
+    userId?: true
     answers?: true
     submittedAt?: true
     _all?: true
@@ -4590,6 +4633,7 @@ export namespace Prisma {
   export type FeedbackResponseGroupByOutputType = {
     id: string
     eventId: string
+    userId: string
     answers: JsonValue
     submittedAt: Date
     _count: FeedbackResponseCountAggregateOutputType | null
@@ -4614,53 +4658,65 @@ export namespace Prisma {
   export type FeedbackResponseSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     eventId?: boolean
+    userId?: boolean
     answers?: boolean
     submittedAt?: boolean
     event?: boolean | EventDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["feedbackResponse"]>
 
   export type FeedbackResponseSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     eventId?: boolean
+    userId?: boolean
     answers?: boolean
     submittedAt?: boolean
     event?: boolean | EventDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["feedbackResponse"]>
 
   export type FeedbackResponseSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     eventId?: boolean
+    userId?: boolean
     answers?: boolean
     submittedAt?: boolean
     event?: boolean | EventDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["feedbackResponse"]>
 
   export type FeedbackResponseSelectScalar = {
     id?: boolean
     eventId?: boolean
+    userId?: boolean
     answers?: boolean
     submittedAt?: boolean
   }
 
-  export type FeedbackResponseOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "eventId" | "answers" | "submittedAt", ExtArgs["result"]["feedbackResponse"]>
+  export type FeedbackResponseOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "eventId" | "userId" | "answers" | "submittedAt", ExtArgs["result"]["feedbackResponse"]>
   export type FeedbackResponseInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     event?: boolean | EventDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
   }
   export type FeedbackResponseIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     event?: boolean | EventDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
   }
   export type FeedbackResponseIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     event?: boolean | EventDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
   }
 
   export type $FeedbackResponsePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "FeedbackResponse"
     objects: {
       event: Prisma.$EventPayload<ExtArgs>
+      user: Prisma.$UserPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       eventId: string
+      userId: string
       answers: Prisma.JsonValue
       submittedAt: Date
     }, ExtArgs["result"]["feedbackResponse"]>
@@ -5058,6 +5114,7 @@ export namespace Prisma {
   export interface Prisma__FeedbackResponseClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     event<T extends EventDefaultArgs<ExtArgs> = {}>(args?: Subset<T, EventDefaultArgs<ExtArgs>>): Prisma__EventClient<$Result.GetResult<Prisma.$EventPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -5089,6 +5146,7 @@ export namespace Prisma {
   interface FeedbackResponseFieldRefs {
     readonly id: FieldRef<"FeedbackResponse", 'String'>
     readonly eventId: FieldRef<"FeedbackResponse", 'String'>
+    readonly userId: FieldRef<"FeedbackResponse", 'String'>
     readonly answers: FieldRef<"FeedbackResponse", 'Json'>
     readonly submittedAt: FieldRef<"FeedbackResponse", 'DateTime'>
   }
@@ -5557,6 +5615,7 @@ export namespace Prisma {
   export const FeedbackResponseScalarFieldEnum: {
     id: 'id',
     eventId: 'eventId',
+    userId: 'userId',
     answers: 'answers',
     submittedAt: 'submittedAt'
   };
@@ -5680,6 +5739,7 @@ export namespace Prisma {
     profilePic?: StringNullableFilter<"User"> | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     events?: EventListRelationFilter
+    feedbackResponses?: FeedbackResponseListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -5691,6 +5751,7 @@ export namespace Prisma {
     profilePic?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     events?: EventOrderByRelationAggregateInput
+    feedbackResponses?: FeedbackResponseOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -5705,6 +5766,7 @@ export namespace Prisma {
     profilePic?: StringNullableFilter<"User"> | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     events?: EventListRelationFilter
+    feedbackResponses?: FeedbackResponseListRelationFilter
   }, "id" | "email" | "googleId">
 
   export type UserOrderByWithAggregationInput = {
@@ -5855,17 +5917,21 @@ export namespace Prisma {
     NOT?: FeedbackResponseWhereInput | FeedbackResponseWhereInput[]
     id?: StringFilter<"FeedbackResponse"> | string
     eventId?: StringFilter<"FeedbackResponse"> | string
+    userId?: StringFilter<"FeedbackResponse"> | string
     answers?: JsonFilter<"FeedbackResponse">
     submittedAt?: DateTimeFilter<"FeedbackResponse"> | Date | string
     event?: XOR<EventScalarRelationFilter, EventWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }
 
   export type FeedbackResponseOrderByWithRelationInput = {
     id?: SortOrder
     eventId?: SortOrder
+    userId?: SortOrder
     answers?: SortOrder
     submittedAt?: SortOrder
     event?: EventOrderByWithRelationInput
+    user?: UserOrderByWithRelationInput
   }
 
   export type FeedbackResponseWhereUniqueInput = Prisma.AtLeast<{
@@ -5874,14 +5940,17 @@ export namespace Prisma {
     OR?: FeedbackResponseWhereInput[]
     NOT?: FeedbackResponseWhereInput | FeedbackResponseWhereInput[]
     eventId?: StringFilter<"FeedbackResponse"> | string
+    userId?: StringFilter<"FeedbackResponse"> | string
     answers?: JsonFilter<"FeedbackResponse">
     submittedAt?: DateTimeFilter<"FeedbackResponse"> | Date | string
     event?: XOR<EventScalarRelationFilter, EventWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }, "id">
 
   export type FeedbackResponseOrderByWithAggregationInput = {
     id?: SortOrder
     eventId?: SortOrder
+    userId?: SortOrder
     answers?: SortOrder
     submittedAt?: SortOrder
     _count?: FeedbackResponseCountOrderByAggregateInput
@@ -5895,6 +5964,7 @@ export namespace Prisma {
     NOT?: FeedbackResponseScalarWhereWithAggregatesInput | FeedbackResponseScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"FeedbackResponse"> | string
     eventId?: StringWithAggregatesFilter<"FeedbackResponse"> | string
+    userId?: StringWithAggregatesFilter<"FeedbackResponse"> | string
     answers?: JsonWithAggregatesFilter<"FeedbackResponse">
     submittedAt?: DateTimeWithAggregatesFilter<"FeedbackResponse"> | Date | string
   }
@@ -5908,6 +5978,7 @@ export namespace Prisma {
     profilePic?: string | null
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutOwnerInput
+    feedbackResponses?: FeedbackResponseCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -5919,6 +5990,7 @@ export namespace Prisma {
     profilePic?: string | null
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutOwnerInput
+    feedbackResponses?: FeedbackResponseUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -5930,6 +6002,7 @@ export namespace Prisma {
     profilePic?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutOwnerNestedInput
+    feedbackResponses?: FeedbackResponseUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -5941,6 +6014,7 @@ export namespace Prisma {
     profilePic?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutOwnerNestedInput
+    feedbackResponses?: FeedbackResponseUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -6096,11 +6170,13 @@ export namespace Prisma {
     answers: JsonNullValueInput | InputJsonValue
     submittedAt?: Date | string
     event: EventCreateNestedOneWithoutFeedbackResponsesInput
+    user: UserCreateNestedOneWithoutFeedbackResponsesInput
   }
 
   export type FeedbackResponseUncheckedCreateInput = {
     id?: string
     eventId: string
+    userId: string
     answers: JsonNullValueInput | InputJsonValue
     submittedAt?: Date | string
   }
@@ -6110,11 +6186,13 @@ export namespace Prisma {
     answers?: JsonNullValueInput | InputJsonValue
     submittedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     event?: EventUpdateOneRequiredWithoutFeedbackResponsesNestedInput
+    user?: UserUpdateOneRequiredWithoutFeedbackResponsesNestedInput
   }
 
   export type FeedbackResponseUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     eventId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
     answers?: JsonNullValueInput | InputJsonValue
     submittedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -6122,6 +6200,7 @@ export namespace Prisma {
   export type FeedbackResponseCreateManyInput = {
     id?: string
     eventId: string
+    userId: string
     answers: JsonNullValueInput | InputJsonValue
     submittedAt?: Date | string
   }
@@ -6135,6 +6214,7 @@ export namespace Prisma {
   export type FeedbackResponseUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     eventId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
     answers?: JsonNullValueInput | InputJsonValue
     submittedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -6186,12 +6266,22 @@ export namespace Prisma {
     none?: EventWhereInput
   }
 
+  export type FeedbackResponseListRelationFilter = {
+    every?: FeedbackResponseWhereInput
+    some?: FeedbackResponseWhereInput
+    none?: FeedbackResponseWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
   }
 
   export type EventOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type FeedbackResponseOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -6283,16 +6373,6 @@ export namespace Prisma {
   export type FeedbackFormNullableScalarRelationFilter = {
     is?: FeedbackFormWhereInput | null
     isNot?: FeedbackFormWhereInput | null
-  }
-
-  export type FeedbackResponseListRelationFilter = {
-    every?: FeedbackResponseWhereInput
-    some?: FeedbackResponseWhereInput
-    none?: FeedbackResponseWhereInput
-  }
-
-  export type FeedbackResponseOrderByRelationAggregateInput = {
-    _count?: SortOrder
   }
 
   export type EventCountOrderByAggregateInput = {
@@ -6398,6 +6478,7 @@ export namespace Prisma {
   export type FeedbackResponseCountOrderByAggregateInput = {
     id?: SortOrder
     eventId?: SortOrder
+    userId?: SortOrder
     answers?: SortOrder
     submittedAt?: SortOrder
   }
@@ -6405,12 +6486,14 @@ export namespace Prisma {
   export type FeedbackResponseMaxOrderByAggregateInput = {
     id?: SortOrder
     eventId?: SortOrder
+    userId?: SortOrder
     submittedAt?: SortOrder
   }
 
   export type FeedbackResponseMinOrderByAggregateInput = {
     id?: SortOrder
     eventId?: SortOrder
+    userId?: SortOrder
     submittedAt?: SortOrder
   }
 
@@ -6421,11 +6504,25 @@ export namespace Prisma {
     connect?: EventWhereUniqueInput | EventWhereUniqueInput[]
   }
 
+  export type FeedbackResponseCreateNestedManyWithoutUserInput = {
+    create?: XOR<FeedbackResponseCreateWithoutUserInput, FeedbackResponseUncheckedCreateWithoutUserInput> | FeedbackResponseCreateWithoutUserInput[] | FeedbackResponseUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: FeedbackResponseCreateOrConnectWithoutUserInput | FeedbackResponseCreateOrConnectWithoutUserInput[]
+    createMany?: FeedbackResponseCreateManyUserInputEnvelope
+    connect?: FeedbackResponseWhereUniqueInput | FeedbackResponseWhereUniqueInput[]
+  }
+
   export type EventUncheckedCreateNestedManyWithoutOwnerInput = {
     create?: XOR<EventCreateWithoutOwnerInput, EventUncheckedCreateWithoutOwnerInput> | EventCreateWithoutOwnerInput[] | EventUncheckedCreateWithoutOwnerInput[]
     connectOrCreate?: EventCreateOrConnectWithoutOwnerInput | EventCreateOrConnectWithoutOwnerInput[]
     createMany?: EventCreateManyOwnerInputEnvelope
     connect?: EventWhereUniqueInput | EventWhereUniqueInput[]
+  }
+
+  export type FeedbackResponseUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<FeedbackResponseCreateWithoutUserInput, FeedbackResponseUncheckedCreateWithoutUserInput> | FeedbackResponseCreateWithoutUserInput[] | FeedbackResponseUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: FeedbackResponseCreateOrConnectWithoutUserInput | FeedbackResponseCreateOrConnectWithoutUserInput[]
+    createMany?: FeedbackResponseCreateManyUserInputEnvelope
+    connect?: FeedbackResponseWhereUniqueInput | FeedbackResponseWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -6454,6 +6551,20 @@ export namespace Prisma {
     deleteMany?: EventScalarWhereInput | EventScalarWhereInput[]
   }
 
+  export type FeedbackResponseUpdateManyWithoutUserNestedInput = {
+    create?: XOR<FeedbackResponseCreateWithoutUserInput, FeedbackResponseUncheckedCreateWithoutUserInput> | FeedbackResponseCreateWithoutUserInput[] | FeedbackResponseUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: FeedbackResponseCreateOrConnectWithoutUserInput | FeedbackResponseCreateOrConnectWithoutUserInput[]
+    upsert?: FeedbackResponseUpsertWithWhereUniqueWithoutUserInput | FeedbackResponseUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: FeedbackResponseCreateManyUserInputEnvelope
+    set?: FeedbackResponseWhereUniqueInput | FeedbackResponseWhereUniqueInput[]
+    disconnect?: FeedbackResponseWhereUniqueInput | FeedbackResponseWhereUniqueInput[]
+    delete?: FeedbackResponseWhereUniqueInput | FeedbackResponseWhereUniqueInput[]
+    connect?: FeedbackResponseWhereUniqueInput | FeedbackResponseWhereUniqueInput[]
+    update?: FeedbackResponseUpdateWithWhereUniqueWithoutUserInput | FeedbackResponseUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: FeedbackResponseUpdateManyWithWhereWithoutUserInput | FeedbackResponseUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: FeedbackResponseScalarWhereInput | FeedbackResponseScalarWhereInput[]
+  }
+
   export type EventUncheckedUpdateManyWithoutOwnerNestedInput = {
     create?: XOR<EventCreateWithoutOwnerInput, EventUncheckedCreateWithoutOwnerInput> | EventCreateWithoutOwnerInput[] | EventUncheckedCreateWithoutOwnerInput[]
     connectOrCreate?: EventCreateOrConnectWithoutOwnerInput | EventCreateOrConnectWithoutOwnerInput[]
@@ -6466,6 +6577,20 @@ export namespace Prisma {
     update?: EventUpdateWithWhereUniqueWithoutOwnerInput | EventUpdateWithWhereUniqueWithoutOwnerInput[]
     updateMany?: EventUpdateManyWithWhereWithoutOwnerInput | EventUpdateManyWithWhereWithoutOwnerInput[]
     deleteMany?: EventScalarWhereInput | EventScalarWhereInput[]
+  }
+
+  export type FeedbackResponseUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<FeedbackResponseCreateWithoutUserInput, FeedbackResponseUncheckedCreateWithoutUserInput> | FeedbackResponseCreateWithoutUserInput[] | FeedbackResponseUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: FeedbackResponseCreateOrConnectWithoutUserInput | FeedbackResponseCreateOrConnectWithoutUserInput[]
+    upsert?: FeedbackResponseUpsertWithWhereUniqueWithoutUserInput | FeedbackResponseUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: FeedbackResponseCreateManyUserInputEnvelope
+    set?: FeedbackResponseWhereUniqueInput | FeedbackResponseWhereUniqueInput[]
+    disconnect?: FeedbackResponseWhereUniqueInput | FeedbackResponseWhereUniqueInput[]
+    delete?: FeedbackResponseWhereUniqueInput | FeedbackResponseWhereUniqueInput[]
+    connect?: FeedbackResponseWhereUniqueInput | FeedbackResponseWhereUniqueInput[]
+    update?: FeedbackResponseUpdateWithWhereUniqueWithoutUserInput | FeedbackResponseUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: FeedbackResponseUpdateManyWithWhereWithoutUserInput | FeedbackResponseUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: FeedbackResponseScalarWhereInput | FeedbackResponseScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutEventsInput = {
@@ -6576,12 +6701,26 @@ export namespace Prisma {
     connect?: EventWhereUniqueInput
   }
 
+  export type UserCreateNestedOneWithoutFeedbackResponsesInput = {
+    create?: XOR<UserCreateWithoutFeedbackResponsesInput, UserUncheckedCreateWithoutFeedbackResponsesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutFeedbackResponsesInput
+    connect?: UserWhereUniqueInput
+  }
+
   export type EventUpdateOneRequiredWithoutFeedbackResponsesNestedInput = {
     create?: XOR<EventCreateWithoutFeedbackResponsesInput, EventUncheckedCreateWithoutFeedbackResponsesInput>
     connectOrCreate?: EventCreateOrConnectWithoutFeedbackResponsesInput
     upsert?: EventUpsertWithoutFeedbackResponsesInput
     connect?: EventWhereUniqueInput
     update?: XOR<XOR<EventUpdateToOneWithWhereWithoutFeedbackResponsesInput, EventUpdateWithoutFeedbackResponsesInput>, EventUncheckedUpdateWithoutFeedbackResponsesInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutFeedbackResponsesNestedInput = {
+    create?: XOR<UserCreateWithoutFeedbackResponsesInput, UserUncheckedCreateWithoutFeedbackResponsesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutFeedbackResponsesInput
+    upsert?: UserUpsertWithoutFeedbackResponsesInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutFeedbackResponsesInput, UserUpdateWithoutFeedbackResponsesInput>, UserUncheckedUpdateWithoutFeedbackResponsesInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -6748,6 +6887,30 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type FeedbackResponseCreateWithoutUserInput = {
+    id?: string
+    answers: JsonNullValueInput | InputJsonValue
+    submittedAt?: Date | string
+    event: EventCreateNestedOneWithoutFeedbackResponsesInput
+  }
+
+  export type FeedbackResponseUncheckedCreateWithoutUserInput = {
+    id?: string
+    eventId: string
+    answers: JsonNullValueInput | InputJsonValue
+    submittedAt?: Date | string
+  }
+
+  export type FeedbackResponseCreateOrConnectWithoutUserInput = {
+    where: FeedbackResponseWhereUniqueInput
+    create: XOR<FeedbackResponseCreateWithoutUserInput, FeedbackResponseUncheckedCreateWithoutUserInput>
+  }
+
+  export type FeedbackResponseCreateManyUserInputEnvelope = {
+    data: FeedbackResponseCreateManyUserInput | FeedbackResponseCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
   export type EventUpsertWithWhereUniqueWithoutOwnerInput = {
     where: EventWhereUniqueInput
     update: XOR<EventUpdateWithoutOwnerInput, EventUncheckedUpdateWithoutOwnerInput>
@@ -6777,6 +6940,33 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Event"> | Date | string
   }
 
+  export type FeedbackResponseUpsertWithWhereUniqueWithoutUserInput = {
+    where: FeedbackResponseWhereUniqueInput
+    update: XOR<FeedbackResponseUpdateWithoutUserInput, FeedbackResponseUncheckedUpdateWithoutUserInput>
+    create: XOR<FeedbackResponseCreateWithoutUserInput, FeedbackResponseUncheckedCreateWithoutUserInput>
+  }
+
+  export type FeedbackResponseUpdateWithWhereUniqueWithoutUserInput = {
+    where: FeedbackResponseWhereUniqueInput
+    data: XOR<FeedbackResponseUpdateWithoutUserInput, FeedbackResponseUncheckedUpdateWithoutUserInput>
+  }
+
+  export type FeedbackResponseUpdateManyWithWhereWithoutUserInput = {
+    where: FeedbackResponseScalarWhereInput
+    data: XOR<FeedbackResponseUpdateManyMutationInput, FeedbackResponseUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type FeedbackResponseScalarWhereInput = {
+    AND?: FeedbackResponseScalarWhereInput | FeedbackResponseScalarWhereInput[]
+    OR?: FeedbackResponseScalarWhereInput[]
+    NOT?: FeedbackResponseScalarWhereInput | FeedbackResponseScalarWhereInput[]
+    id?: StringFilter<"FeedbackResponse"> | string
+    eventId?: StringFilter<"FeedbackResponse"> | string
+    userId?: StringFilter<"FeedbackResponse"> | string
+    answers?: JsonFilter<"FeedbackResponse">
+    submittedAt?: DateTimeFilter<"FeedbackResponse"> | Date | string
+  }
+
   export type UserCreateWithoutEventsInput = {
     id?: string
     email: string
@@ -6785,6 +6975,7 @@ export namespace Prisma {
     googleId?: string | null
     profilePic?: string | null
     createdAt?: Date | string
+    feedbackResponses?: FeedbackResponseCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutEventsInput = {
@@ -6795,6 +6986,7 @@ export namespace Prisma {
     googleId?: string | null
     profilePic?: string | null
     createdAt?: Date | string
+    feedbackResponses?: FeedbackResponseUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutEventsInput = {
@@ -6821,10 +7013,12 @@ export namespace Prisma {
     id?: string
     answers: JsonNullValueInput | InputJsonValue
     submittedAt?: Date | string
+    user: UserCreateNestedOneWithoutFeedbackResponsesInput
   }
 
   export type FeedbackResponseUncheckedCreateWithoutEventInput = {
     id?: string
+    userId: string
     answers: JsonNullValueInput | InputJsonValue
     submittedAt?: Date | string
   }
@@ -6858,6 +7052,7 @@ export namespace Prisma {
     googleId?: NullableStringFieldUpdateOperationsInput | string | null
     profilePic?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    feedbackResponses?: FeedbackResponseUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutEventsInput = {
@@ -6868,6 +7063,7 @@ export namespace Prisma {
     googleId?: NullableStringFieldUpdateOperationsInput | string | null
     profilePic?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    feedbackResponses?: FeedbackResponseUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type FeedbackFormUpsertWithoutEventInput = {
@@ -6905,16 +7101,6 @@ export namespace Prisma {
   export type FeedbackResponseUpdateManyWithWhereWithoutEventInput = {
     where: FeedbackResponseScalarWhereInput
     data: XOR<FeedbackResponseUpdateManyMutationInput, FeedbackResponseUncheckedUpdateManyWithoutEventInput>
-  }
-
-  export type FeedbackResponseScalarWhereInput = {
-    AND?: FeedbackResponseScalarWhereInput | FeedbackResponseScalarWhereInput[]
-    OR?: FeedbackResponseScalarWhereInput[]
-    NOT?: FeedbackResponseScalarWhereInput | FeedbackResponseScalarWhereInput[]
-    id?: StringFilter<"FeedbackResponse"> | string
-    eventId?: StringFilter<"FeedbackResponse"> | string
-    answers?: JsonFilter<"FeedbackResponse">
-    submittedAt?: DateTimeFilter<"FeedbackResponse"> | Date | string
   }
 
   export type EventCreateWithoutFeedbackFormInput = {
@@ -7004,6 +7190,33 @@ export namespace Prisma {
     create: XOR<EventCreateWithoutFeedbackResponsesInput, EventUncheckedCreateWithoutFeedbackResponsesInput>
   }
 
+  export type UserCreateWithoutFeedbackResponsesInput = {
+    id?: string
+    email: string
+    password?: string | null
+    name?: string | null
+    googleId?: string | null
+    profilePic?: string | null
+    createdAt?: Date | string
+    events?: EventCreateNestedManyWithoutOwnerInput
+  }
+
+  export type UserUncheckedCreateWithoutFeedbackResponsesInput = {
+    id?: string
+    email: string
+    password?: string | null
+    name?: string | null
+    googleId?: string | null
+    profilePic?: string | null
+    createdAt?: Date | string
+    events?: EventUncheckedCreateNestedManyWithoutOwnerInput
+  }
+
+  export type UserCreateOrConnectWithoutFeedbackResponsesInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutFeedbackResponsesInput, UserUncheckedCreateWithoutFeedbackResponsesInput>
+  }
+
   export type EventUpsertWithoutFeedbackResponsesInput = {
     update: XOR<EventUpdateWithoutFeedbackResponsesInput, EventUncheckedUpdateWithoutFeedbackResponsesInput>
     create: XOR<EventCreateWithoutFeedbackResponsesInput, EventUncheckedCreateWithoutFeedbackResponsesInput>
@@ -7037,6 +7250,39 @@ export namespace Prisma {
     feedbackForm?: FeedbackFormUncheckedUpdateOneWithoutEventNestedInput
   }
 
+  export type UserUpsertWithoutFeedbackResponsesInput = {
+    update: XOR<UserUpdateWithoutFeedbackResponsesInput, UserUncheckedUpdateWithoutFeedbackResponsesInput>
+    create: XOR<UserCreateWithoutFeedbackResponsesInput, UserUncheckedCreateWithoutFeedbackResponsesInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutFeedbackResponsesInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutFeedbackResponsesInput, UserUncheckedUpdateWithoutFeedbackResponsesInput>
+  }
+
+  export type UserUpdateWithoutFeedbackResponsesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    googleId?: NullableStringFieldUpdateOperationsInput | string | null
+    profilePic?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    events?: EventUpdateManyWithoutOwnerNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutFeedbackResponsesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    googleId?: NullableStringFieldUpdateOperationsInput | string | null
+    profilePic?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    events?: EventUncheckedUpdateManyWithoutOwnerNestedInput
+  }
+
   export type EventCreateManyOwnerInput = {
     id?: string
     title: string
@@ -7044,6 +7290,13 @@ export namespace Prisma {
     date: Date | string
     bannerUrl: string
     createdAt?: Date | string
+  }
+
+  export type FeedbackResponseCreateManyUserInput = {
+    id?: string
+    eventId: string
+    answers: JsonNullValueInput | InputJsonValue
+    submittedAt?: Date | string
   }
 
   export type EventUpdateWithoutOwnerInput = {
@@ -7077,8 +7330,30 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type FeedbackResponseUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    answers?: JsonNullValueInput | InputJsonValue
+    submittedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    event?: EventUpdateOneRequiredWithoutFeedbackResponsesNestedInput
+  }
+
+  export type FeedbackResponseUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventId?: StringFieldUpdateOperationsInput | string
+    answers?: JsonNullValueInput | InputJsonValue
+    submittedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FeedbackResponseUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventId?: StringFieldUpdateOperationsInput | string
+    answers?: JsonNullValueInput | InputJsonValue
+    submittedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type FeedbackResponseCreateManyEventInput = {
     id?: string
+    userId: string
     answers: JsonNullValueInput | InputJsonValue
     submittedAt?: Date | string
   }
@@ -7087,16 +7362,19 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     answers?: JsonNullValueInput | InputJsonValue
     submittedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutFeedbackResponsesNestedInput
   }
 
   export type FeedbackResponseUncheckedUpdateWithoutEventInput = {
     id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
     answers?: JsonNullValueInput | InputJsonValue
     submittedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type FeedbackResponseUncheckedUpdateManyWithoutEventInput = {
     id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
     answers?: JsonNullValueInput | InputJsonValue
     submittedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
