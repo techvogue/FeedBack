@@ -15,6 +15,7 @@ import MyEvents from './pages/MyEvents';
 import OAuthSuccess from './pages/OAuthSuccess';
 import EventDetail from './pages/EventDetail';
 import EditEvent from './pages/EditEvent';
+import FeedbackPage from './pages/FeedbackPage';
 import './App.css';
 
 // Create theme with glassmorphism support
@@ -91,6 +92,7 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
+                <Route path="/feedback/:eventId" element={<FeedbackPage />} />
                 <Route
                   path="/edit-event/:id"
                   element={

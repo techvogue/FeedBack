@@ -23,6 +23,10 @@
     "react-qr-code": "^2.0.18",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.7.1",
+    "survey-core": "^2.2.6",
+    "survey-creator-core": "^2.2.6",
+    "survey-creator-react": "^2.2.6",
+    "survey-react-ui": "^2.2.6",
     "tailwindcss": "^4.1.11"
   },
   "devDependencies": {

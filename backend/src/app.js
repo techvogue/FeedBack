@@ -13,6 +13,7 @@ require('./config/passport-google')(passport);
 // Import routes
 const authRoutes = require('./routes/auth');
 const dashboardRoutes = require('./routes/dashboard');
+const feedbackRoutes = require('./routes/feedback');
 
 const app = express();
 
@@ -33,6 +34,7 @@ app.use(passport.initialize());
 app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/events', require('./routes/event'));
+app.use('/api/feedback', feedbackRoutes);
 
 // Health check route
 app.get('/api/health', (req, res) => {
@@ -49,7 +51,6 @@ app.use((err, req, res, next) => {
 app.use('*', (req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });
-app.use('/api/feedback-form', require('./routes/feedbackForm'));
 
 const PORT = process.env.PORT || 5000;
 
