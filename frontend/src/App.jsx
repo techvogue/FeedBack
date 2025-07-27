@@ -14,6 +14,7 @@ import AddEvent from './pages/AddEvent';
 import MyEvents from './pages/MyEvents';
 import OAuthSuccess from './pages/OAuthSuccess';
 import EventDetail from './pages/EventDetail';
+import EditEvent from './pages/EditEvent';
 import './App.css';
 
 // Create theme with glassmorphism support
@@ -87,6 +88,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <EventDetail />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/edit-event/:id"
+                  element={
+                    <ProtectedRoute>
+                      <EditEvent />
                     </ProtectedRoute>
                   }
                 />

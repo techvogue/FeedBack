@@ -48,19 +48,15 @@ export default function MyEvents() {
   const handleDeleteEvent = async (eventId) => {
     if (window.confirm('Are you sure you want to delete this event?')) {
       try {
-        await axios.delete(`/events/${eventId}`); // Assuming a DELETE endpoint for events
-        // Optimistically update UI or re-fetch events
+        await axios.delete(`/events/${eventId}`); // Use DELETE endpoint
         setEvents(prevEvents => prevEvents.filter(event => event.id !== eventId));
-        // You might want to show a success notification here
       } catch (err) {
-        console.error('Error deleting event:', err);
         setError(err.response?.data?.message || 'Failed to delete event.');
       }
     }
   };
 
   const handleEditEvent = (eventId) => {
-    // Implement navigation to an edit page, e.g.:
     navigate(`/edit-event/${eventId}`);
   };
 
@@ -154,8 +150,8 @@ export default function MyEvents() {
                 {/* Use the new EventCard component */}
                 <EventCard
                   event={event}
-                  onDelete={handleDeleteEvent} // Pass the delete handler
-                  onEdit={handleEditEvent}     // Pass the edit handler
+                  onDelete={handleDeleteEvent}
+                  onEdit={handleEditEvent}
                 />
               </Grid>
             ))}

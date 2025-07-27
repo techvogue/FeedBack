@@ -140,9 +140,26 @@ exports.Prisma.EventScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.FeedbackFormScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  schema: 'schema'
+};
+
+exports.Prisma.FeedbackResponseScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  answers: 'answers',
+  submittedAt: 'submittedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
+};
+
+exports.Prisma.JsonNullValueInput = {
+  JsonNull: Prisma.JsonNull
 };
 
 exports.Prisma.QueryMode = {
@@ -155,10 +172,18 @@ exports.Prisma.NullsOrder = {
   last: 'last'
 };
 
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
+};
+
 
 exports.Prisma.ModelName = {
   User: 'User',
-  Event: 'Event'
+  Event: 'Event',
+  FeedbackForm: 'FeedbackForm',
+  FeedbackResponse: 'FeedbackResponse'
 };
 
 /**

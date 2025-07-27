@@ -16,16 +16,33 @@ model User {
   googleId   String?   @unique
   profilePic String?   // Cloudinary URL
   createdAt  DateTime  @default(now())
-  events     Event[]   // Added the missing opposite relation field
+  events     Event[]   // User can have multiple Events
 }
 
 model Event {
+  id             String         @id @default(uuid())
+  title          String
+  description    String
+  date           DateTime
+  bannerUrl      String
+  ownerId        String
+  owner          User           @relation(fields: [ownerId], references: [id])
+  createdAt      DateTime       @default(now())
+  feedbackForm   FeedbackForm?  // <--- ADDED: Inverse relation for one-to-one with FeedbackForm
+  feedbackResponses FeedbackResponse[] // Event can have many FeedbackResponses
+}
+
+model FeedbackForm {
+  id        String   @id @default(uuid())
+  eventId   String   @unique
+  schema    Json     // Dynamic array of questions/fields
+  event     Event    @relation(fields: [eventId], references: [id])
+}
+
+model FeedbackResponse {
   id          String    @id @default(uuid())
-  title       String
-  description String
-  date        DateTime
-  bannerUrl   String
-  ownerId     String
-  owner       User      @relation(fields: [ownerId], references: [id])
-  createdAt   DateTime  @default(now())
+  eventId     String
+  answers     Json      // [{questionId, answer}]
+  submittedAt DateTime  @default(now())
+  event       Event     @relation(fields: [eventId], references: [id])
 }

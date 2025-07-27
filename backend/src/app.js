@@ -49,6 +49,7 @@ app.use((err, req, res, next) => {
 app.use('*', (req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });
+app.use('/api/feedback-form', require('./routes/feedbackForm'));
 
 const PORT = process.env.PORT || 5000;
 

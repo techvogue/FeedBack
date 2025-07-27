@@ -26,4 +26,19 @@ router.get(
   eventController.getEventById
 );
 
+// Update event by ID
+router.patch(
+  '/:id',
+  passport.authenticate('jwt', { session: false }),
+  upload.single('banner'),
+  eventController.updateEvent
+);
+
+// Delete event by ID
+router.delete(
+  '/:id',
+  passport.authenticate('jwt', { session: false }),
+  eventController.deleteEvent
+);
+
 module.exports = router;
