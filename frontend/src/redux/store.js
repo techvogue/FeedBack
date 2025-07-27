@@ -1,11 +1,16 @@
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './slices/authSlice';
-import eventReducer from './slices/eventSlice';
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
-    events: eventReducer,
-    // add other slices here
-  }
+  },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: {
+        ignoredActions: ['persist/PERSIST'],
+      },
+    }),
 });
+
+export default store; 
