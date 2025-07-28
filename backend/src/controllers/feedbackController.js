@@ -157,6 +157,8 @@ exports.getFeedbackResponses = async (req, res) => {
       where: { id: eventId }
     });
 
+    console.log(">>> [feedbackController] Event found:", event);
+
     if (!event) {
       return res.status(404).json({ message: 'Event not found' });
     }

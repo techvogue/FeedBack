@@ -1,27 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import {
-  Modal,
-  Box,
-  Typography,
-  Avatar,
-  Button,
-  TextField,
-  Alert,
-  CircularProgress,
-  IconButton,
-} from '@mui/material';
 import {
   Close,
   PhotoCamera,
   Save,
 } from '@mui/icons-material';
-import { getProfile, updateProfilePicture, clearError } from '../redux/slices/authSlice';
+import {
+  Alert,
+  Avatar,
+  Box,
+  Button,
+  CircularProgress,
+  IconButton,
+  Modal,
+  TextField,
+  Typography,
+} from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { clearError, getProfile, updateProfilePicture } from '../redux/slices/authSlice';
 
 const ProfileModal = ({ open, onClose }) => {
   const dispatch = useDispatch();
   const { user, loading, error } = useSelector((state) => state.auth);
-  
+
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [uploading, setUploading] = useState(false);

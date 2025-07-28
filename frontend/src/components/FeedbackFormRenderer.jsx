@@ -53,10 +53,7 @@ const FeedbackFormRenderer = ({ eventId, onComplete }) => {
         // Configure survey for file uploads
         const surveyModel = new Model(schema);
 
-        // FIX: Set validation to happen on complete to avoid "Response required" on load
-        surveyModel.validateOn = 'onComplete'; // or 'valueChanged' if you prefer validation as user types/selects
-
-        // Custom styling for better readability - Modern, Easy, Clean
+        // Custom styling for better readability
         surveyModel.css = {
           root: "sv_main",
           header: "sv_header",
@@ -165,16 +162,8 @@ const FeedbackFormRenderer = ({ eventId, onComplete }) => {
 
   if (loading) {
     return (
-      <Box sx={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '60vh', // Ensure it takes up enough space to center
-        p: 4,
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', // Match page background
-      }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
         <CircularProgress sx={{ color: '#3498db' }} />
-        <Typography variant="body1" sx={{ ml: 2, color: 'white' }}>Loading feedback form...</Typography>
       </Box>
     );
   }
@@ -185,9 +174,7 @@ const FeedbackFormRenderer = ({ eventId, onComplete }) => {
         m: 2,
         backgroundColor: '#fdf2f2',
         color: '#c53030',
-        '& .MuiAlert-icon': { color: '#c53030' },
-        borderRadius: 2,
-        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+        '& .MuiAlert-icon': { color: '#c53030' }
       }}>
         {error}
       </Alert>
@@ -200,9 +187,7 @@ const FeedbackFormRenderer = ({ eventId, onComplete }) => {
         m: 2,
         backgroundColor: '#f0fff4',
         color: '#2f855a',
-        '& .MuiAlert-icon': { color: '#2f855a' },
-        borderRadius: 2,
-        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+        '& .MuiAlert-icon': { color: '#2f855a' }
       }}>
         {success}
       </Alert>
@@ -216,10 +201,7 @@ const FeedbackFormRenderer = ({ eventId, onComplete }) => {
         background: 'rgba(255,255,255,0.98)',
         borderRadius: 3,
         boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-        textAlign: 'center',
-        maxWidth: 600, // Constrain width for better appearance
-        mx: 'auto', // Center the paper
-        my: 4, // Add vertical margin
+        textAlign: 'center'
       }}>
         <Typography variant="h5" sx={{
           mb: 2,
@@ -241,7 +223,6 @@ const FeedbackFormRenderer = ({ eventId, onComplete }) => {
             sx={{
               borderColor: '#3498db',
               color: '#3498db',
-              borderRadius: 2, // Rounded buttons
               '&:hover': { borderColor: '#2980b9', backgroundColor: 'rgba(52, 152, 219, 0.1)' }
             }}
           >
@@ -252,8 +233,6 @@ const FeedbackFormRenderer = ({ eventId, onComplete }) => {
             onClick={() => window.location.href = '/'}
             sx={{
               backgroundColor: '#27ae60',
-              color: 'white', // Ensure text is white
-              borderRadius: 2, // Rounded buttons
               '&:hover': { backgroundColor: '#229954' }
             }}
           >
@@ -265,220 +244,147 @@ const FeedbackFormRenderer = ({ eventId, onComplete }) => {
   }
 
   return (
-    <Box sx={{
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', // Full page background
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'flex-start', // Align to top, not center vertically
-      py: 4, // Padding top/bottom
-      px: 2, // Padding left/right
+    <Paper sx={{
+      p: 3,
+      background: 'rgba(255,255,255,0.98)',
+      borderRadius: 3,
+      boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
     }}>
-      <Paper sx={{
-        p: { xs: 2, sm: 4 }, // Responsive padding
-        background: 'rgba(255,255,255,0.98)',
-        borderRadius: 3, // More rounded corners
-        boxShadow: '0 12px 40px rgba(0,0,0,0.15)', // Enhanced shadow
-        width: '100%',
-        maxWidth: 800, // Max width for the form container
-      }}>
-        {eventData && (
-          <Box sx={{ mb: 4, textAlign: 'center' }}>
-            <Typography variant="h4" sx={{
-              fontWeight: 'bold',
-              mb: 1,
-              color: '#2c3e50',
-              fontSize: { xs: '1.8rem', sm: '2.2rem' } // Responsive font size
-            }}>
-              {eventData.title}
-            </Typography>
-            <Typography variant="body1" sx={{
-              color: '#7f8c8d',
-              fontSize: { xs: '0.95rem', sm: '1.1rem' } // Responsive font size
-            }}>
-              {eventData.description}
-            </Typography>
-          </Box>
-        )}
-
-        {submitting && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-            <CircularProgress sx={{ color: '#3498db' }} />
-            <Typography variant="body1" sx={{ ml: 2, color: '#3498db' }}>Submitting feedback...</Typography>
-          </Box>
-        )}
-
-        {survey && (
-          <Box sx={{
-            // SurveyJS overrides for modern look
-            '& .sv_main': {
-              fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif', // Use Inter if available, fallback to Roboto
-              color: '#2c3e50',
-              backgroundColor: 'transparent', // Ensure SurveyJS background is transparent
-              border: 'none', // Remove default border
-              padding: 0, // Remove default padding
-            },
-            '& .sv_header': {
-              display: 'none', // Hide default SurveyJS header if eventData title is used
-            },
-            '& .sv_body': {
-              padding: 0, // Remove body padding
-            },
-            '& .sv_q': {
-              marginBottom: '24px', // More space between questions
-              padding: '16px', // Padding around each question
-              border: '1px solid #e0e0e0', // Subtle border for questions
-              borderRadius: '12px', // Rounded corners for question boxes
-              backgroundColor: '#ffffff', // White background for question boxes
-              boxShadow: '0 2px 8px rgba(0,0,0,0.05)', // Subtle shadow for question boxes
-            },
-            '& .sv_q_title': {
-              fontSize: '1.15rem',
-              fontWeight: 600,
-              color: '#34495e',
-              marginBottom: '12px',
-              borderBottom: '1px solid #f0f0f0', // Separator for question title
-              paddingBottom: '8px',
-            },
-            '& .sv_q_description': {
-              color: '#7f8c8d',
-              fontSize: '0.9rem',
-              marginBottom: '12px'
-            },
-            '& .sv_q_required': {
-              color: '#e74c3c',
-              fontWeight: 600,
-              marginLeft: '4px',
-            },
-            '& .sv_q_text_input, & .sv_q_comment_input, & .sv_q_email_input, & .sv_q_number_input': {
-              border: '1px solid #dcdcdc', // Lighter border
-              borderRadius: '8px',
-              padding: '12px',
-              fontSize: '1rem',
-              width: '100%', // Full width
-              boxSizing: 'border-box', // Include padding in width
-              transition: 'border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
-              '&:focus': {
-                borderColor: '#3498db',
-                outline: 'none',
-                boxShadow: '0 0 0 3px rgba(52, 152, 219, 0.2)' // More prominent focus shadow
-              }
-            },
-            '& .sv_q_comment_input': {
-              minHeight: '100px', // Min height for comment box
-              resize: 'vertical', // Allow vertical resizing
-            },
-            '& .sv_q_radio_item, & .sv_q_checkbox_item': {
-              marginBottom: '8px',
-              padding: '8px 12px', // Slightly more padding
-              borderRadius: '8px', // More rounded
-              transition: 'background-color 0.2s ease-in-out',
-              '&:hover': {
-                backgroundColor: '#f8f9fa'
-              },
-              '&.checked': { // Style for checked items
-                backgroundColor: 'rgba(52, 152, 219, 0.1)',
-                border: '1px solid #3498db',
-              }
-            },
-            '& .sv_q_radio_label, & .sv_q_checkbox_label': {
-              fontSize: '1rem',
-              color: '#2c3e50',
-              marginLeft: '8px',
-              cursor: 'pointer', // Indicate clickable
-            },
-            '& .sv_q_rating_item': {
-              fontSize: '1.8rem', // Larger rating stars/numbers
-              color: '#f39c12',
-              margin: '0 6px', // More space between rating items
-              cursor: 'pointer',
-              transition: 'transform 0.2s ease-in-out',
-              '&:hover': {
-                transform: 'scale(1.1)', // Slight scale on hover
-              },
-              '&.active': { // Style for selected rating
-                color: '#e67e22', // Darker orange when active
-                transform: 'scale(1.2)',
-              }
-            },
-            '& .sv_q_boolean_item': {
-              padding: '12px',
-              border: '1px solid #dcdcdc',
-              borderRadius: '8px',
-              margin: '4px 0',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: 500,
-              color: '#34495e',
-              transition: 'background-color 0.2s ease-in-out, border-color 0.2s ease-in-out',
-              '&:hover': {
-                borderColor: '#3498db',
-                backgroundColor: '#f8f9fa'
-              },
-              '&.sv-boolean__checked': { // SurveyJS class for checked boolean
-                backgroundColor: '#e8f5e9', // Light green for checked
-                borderColor: '#27ae60',
-                color: '#27ae60',
-              },
-            },
-            '& .sv_q_file_input': {
-              border: '2px dashed #bdc3c7',
-              borderRadius: '12px',
-              padding: '20px',
-              textAlign: 'center',
-              cursor: 'pointer',
-              transition: 'border-color 0.2s ease-in-out, background-color 0.2s ease-in-out',
-              '&:hover': {
-                borderColor: '#3498db',
-                backgroundColor: '#f8f9fa'
-              }
-            },
-            '& .sv_nav': {
-              marginTop: '32px', // More space above navigation
-              paddingTop: '20px',
-              borderTop: '1px solid #e0e0e0', // Lighter separator
-              display: 'flex',
-              justifyContent: 'space-between', // Space out buttons
-              gap: '16px', // Gap between buttons
-              flexWrap: 'wrap', // Allow wrapping on small screens
-            },
-            '& .sv_nav_next, & .sv_nav_complete, & .sv_nav_prev': {
-              flexGrow: 1, // Allow buttons to grow
-              minWidth: '120px', // Minimum width for buttons
-              padding: '14px 28px', // More padding for buttons
-              borderRadius: '8px', // More rounded buttons
-              fontSize: '1.05rem',
-              fontWeight: 600,
-              cursor: 'pointer',
-              transition: 'background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, color 0.2s ease-in-out',
-            },
-            '& .sv_nav_next, & .sv_nav_complete': {
-              backgroundColor: '#3498db',
-              color: 'white',
-              border: 'none',
-              '&:hover': {
-                backgroundColor: '#2980b9',
-                boxShadow: '0 4px 12px rgba(52, 152, 219, 0.2)'
-              }
-            },
-            '& .sv_nav_prev': {
-              backgroundColor: 'transparent',
-              color: '#7f8c8d',
-              border: '2px solid #bdc3c7',
-              '&:hover': {
-                borderColor: '#3498db',
-                color: '#3498db',
-                backgroundColor: 'rgba(52, 152, 219, 0.05)'
-              }
-            }
+      {eventData && (
+        <Box sx={{ mb: 3, textAlign: 'center' }}>
+          <Typography variant="h4" sx={{
+            fontWeight: 'bold',
+            mb: 1,
+            color: '#2c3e50'
           }}>
-            <Survey model={survey} />
-          </Box>
-        )}
-      </Paper>
-    </Box>
+            {eventData.title}
+          </Typography>
+          <Typography variant="body1" sx={{
+            color: '#7f8c8d',
+            fontSize: '1.1rem'
+          }}>
+            {eventData.description}
+          </Typography>
+        </Box>
+      )}
+
+      {submitting && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+          <CircularProgress sx={{ color: '#3498db' }} />
+        </Box>
+      )}
+
+      {survey && (
+        <Box sx={{
+          maxWidth: 800,
+          mx: 'auto',
+          '& .sv_main': {
+            fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+            color: '#2c3e50'
+          },
+          '& .sv_q_title': {
+            fontSize: '1.1rem',
+            fontWeight: 600,
+            color: '#34495e',
+            marginBottom: '8px'
+          },
+          '& .sv_q_description': {
+            color: '#7f8c8d',
+            fontSize: '0.9rem',
+            marginBottom: '12px'
+          },
+          '& .sv_q_required': {
+            color: '#e74c3c',
+            fontWeight: 600
+          },
+          '& .sv_q_text_input, & .sv_q_comment_input, & .sv_q_email_input, & .sv_q_number_input': {
+            border: '2px solid #ecf0f1',
+            borderRadius: '8px',
+            padding: '12px',
+            fontSize: '1rem',
+            '&:focus': {
+              borderColor: '#3498db',
+              outline: 'none',
+              boxShadow: '0 0 0 3px rgba(52, 152, 219, 0.1)'
+            }
+          },
+          '& .sv_q_radio_item, & .sv_q_checkbox_item': {
+            marginBottom: '8px',
+            padding: '8px',
+            borderRadius: '6px',
+            '&:hover': {
+              backgroundColor: '#f8f9fa'
+            }
+          },
+          '& .sv_q_radio_label, & .sv_q_checkbox_label': {
+            fontSize: '1rem',
+            color: '#2c3e50',
+            marginLeft: '8px'
+          },
+          '& .sv_q_rating_item': {
+            fontSize: '1.5rem',
+            color: '#f39c12',
+            margin: '0 4px'
+          },
+          '& .sv_q_boolean_item': {
+            padding: '12px',
+            border: '2px solid #ecf0f1',
+            borderRadius: '8px',
+            margin: '4px 0',
+            cursor: 'pointer',
+            '&:hover': {
+              borderColor: '#3498db',
+              backgroundColor: '#f8f9fa'
+            }
+          },
+          '& .sv_q_file_input': {
+            border: '2px dashed #bdc3c7',
+            borderRadius: '8px',
+            padding: '20px',
+            textAlign: 'center',
+            cursor: 'pointer',
+            '&:hover': {
+              borderColor: '#3498db',
+              backgroundColor: '#f8f9fa'
+            }
+          },
+          '& .sv_nav': {
+            marginTop: '24px',
+            paddingTop: '16px',
+            borderTop: '2px solid #ecf0f1'
+          },
+          '& .sv_nav_next, & .sv_nav_complete': {
+            backgroundColor: '#3498db',
+            color: 'white',
+            border: 'none',
+            padding: '12px 24px',
+            borderRadius: '6px',
+            fontSize: '1rem',
+            fontWeight: 600,
+            cursor: 'pointer',
+            '&:hover': {
+              backgroundColor: '#2980b9'
+            }
+          },
+          '& .sv_nav_prev': {
+            backgroundColor: 'transparent',
+            color: '#7f8c8d',
+            border: '2px solid #bdc3c7',
+            padding: '12px 24px',
+            borderRadius: '6px',
+            fontSize: '1rem',
+            fontWeight: 600,
+            cursor: 'pointer',
+            '&:hover': {
+              borderColor: '#3498db',
+              color: '#3498db'
+            }
+          }
+        }}>
+          <Survey model={survey} />
+        </Box>
+      )}
+    </Paper>
   );
 };
 

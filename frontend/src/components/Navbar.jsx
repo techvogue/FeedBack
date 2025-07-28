@@ -1,17 +1,3 @@
-import React, { useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import {
-  AppBar,
-  Toolbar,
-  Typography,
-  Button,
-  Avatar,
-  Menu,
-  MenuItem,
-  Box,
-  IconButton,
-} from '@mui/material';
 import {
   AccountCircle,
   Dashboard,
@@ -19,6 +5,20 @@ import {
   Logout,
   Person,
 } from '@mui/icons-material';
+import {
+  AppBar,
+  Avatar,
+  Box,
+  Button,
+  IconButton,
+  Menu,
+  MenuItem,
+  Toolbar,
+  Typography,
+} from '@mui/material';
+import React, { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { logout } from '../redux/slices/authSlice';
 import ProfileModal from './ProfileModal';
 
@@ -26,7 +26,7 @@ const Navbar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { isAuthenticated, user } = useSelector((state) => state.auth);
-  
+
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
 

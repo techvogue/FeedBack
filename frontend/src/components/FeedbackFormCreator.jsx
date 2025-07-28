@@ -1,20 +1,20 @@
-import React, { useState } from 'react';
+import { Add as AddIcon, ArrowBack as ArrowBackIcon, Delete as DeleteIcon, Save as SaveIcon } from '@mui/icons-material';
 import {
+  Alert,
   Box,
   Button,
-  Typography,
-  Alert,
+  Chip,
   CircularProgress,
-  Paper,
-  TextField,
   FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   IconButton,
-  Chip
+  InputLabel,
+  MenuItem,
+  Paper,
+  Select,
+  TextField,
+  Typography
 } from '@mui/material';
-import { Save as SaveIcon, ArrowBack as ArrowBackIcon, Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import React, { useState } from 'react';
 import axios from '../api/axiosInstance';
 
 const FeedbackFormCreator = ({ eventId, onSave, onCancel }) => {
@@ -35,35 +35,35 @@ const FeedbackFormCreator = ({ eventId, onSave, onCancel }) => {
   };
 
   const updateQuestion = (id, field, value) => {
-    setQuestions(questions.map(q => 
+    setQuestions(questions.map(q =>
       q.id === id ? { ...q, [field]: value } : q
     ));
   };
 
   const addOption = (questionId) => {
-    setQuestions(questions.map(q => 
-      q.id === questionId 
+    setQuestions(questions.map(q =>
+      q.id === questionId
         ? { ...q, options: [...q.options, `Option ${q.options.length + 1}`] }
         : q
     ));
   };
 
   const updateOption = (questionId, optionIndex, value) => {
-    setQuestions(questions.map(q => 
-      q.id === questionId 
-        ? { 
-            ...q, 
-            options: q.options.map((opt, idx) => 
-              idx === optionIndex ? value : opt
-            )
-          }
+    setQuestions(questions.map(q =>
+      q.id === questionId
+        ? {
+          ...q,
+          options: q.options.map((opt, idx) =>
+            idx === optionIndex ? value : opt
+          )
+        }
         : q
     ));
   };
 
   const removeOption = (questionId, optionIndex) => {
-    setQuestions(questions.map(q => 
-      q.id === questionId 
+    setQuestions(questions.map(q =>
+      q.id === questionId
         ? { ...q, options: q.options.filter((_, idx) => idx !== optionIndex) }
         : q
     ));
@@ -108,9 +108,9 @@ const FeedbackFormCreator = ({ eventId, onSave, onCancel }) => {
   };
 
   return (
-    <Paper sx={{ 
-      p: 3, 
-      background: 'rgba(255,255,255,0.98)', 
+    <Paper sx={{
+      p: 3,
+      background: 'rgba(255,255,255,0.98)',
       borderRadius: 3,
       boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
     }}>
@@ -123,8 +123,8 @@ const FeedbackFormCreator = ({ eventId, onSave, onCancel }) => {
             startIcon={<ArrowBackIcon />}
             onClick={onCancel}
             variant="outlined"
-            sx={{ 
-              borderColor: '#3498db', 
+            sx={{
+              borderColor: '#3498db',
               color: '#3498db',
               '&:hover': { borderColor: '#2980b9', backgroundColor: 'rgba(52, 152, 219, 0.1)' }
             }}
@@ -136,7 +136,7 @@ const FeedbackFormCreator = ({ eventId, onSave, onCancel }) => {
             onClick={handleSave}
             variant="contained"
             disabled={saving}
-            sx={{ 
+            sx={{
               backgroundColor: '#27ae60',
               '&:hover': { backgroundColor: '#229954' },
               '&:disabled': { backgroundColor: '#bdc3c7' }
@@ -163,12 +163,12 @@ const FeedbackFormCreator = ({ eventId, onSave, onCancel }) => {
         <Typography variant="h6" sx={{ mb: 2, color: '#34495e', fontWeight: 600 }}>
           Form Questions
         </Typography>
-        
+
         {questions.map((question, index) => (
-          <Box key={question.id} sx={{ 
-            mb: 3, 
-            p: 3, 
-            border: '2px solid #ecf0f1', 
+          <Box key={question.id} sx={{
+            mb: 3,
+            p: 3,
+            border: '2px solid #ecf0f1',
             borderRadius: 2,
             backgroundColor: '#fafbfc',
             '&:hover': { borderColor: '#3498db', backgroundColor: '#f8f9fa' }
@@ -233,9 +233,9 @@ const FeedbackFormCreator = ({ eventId, onSave, onCancel }) => {
                 </Select>
               </FormControl>
               {questions.length > 1 && (
-                <IconButton 
+                <IconButton
                   onClick={() => removeQuestion(question.id)}
-                  sx={{ 
+                  sx={{
                     color: '#e74c3c',
                     '&:hover': { backgroundColor: 'rgba(231, 76, 60, 0.1)' }
                   }}
@@ -268,7 +268,7 @@ const FeedbackFormCreator = ({ eventId, onSave, onCancel }) => {
                       }}
                     />
                     {question.options.length > 2 && (
-                      <IconButton 
+                      <IconButton
                         size="small"
                         onClick={() => removeOption(question.id, optionIndex)}
                         sx={{ color: '#e74c3c' }}
@@ -281,7 +281,7 @@ const FeedbackFormCreator = ({ eventId, onSave, onCancel }) => {
                 <Button
                   size="small"
                   onClick={() => addOption(question.id)}
-                  sx={{ 
+                  sx={{
                     mt: 1,
                     color: '#3498db',
                     borderColor: '#3498db',
@@ -296,28 +296,28 @@ const FeedbackFormCreator = ({ eventId, onSave, onCancel }) => {
 
             {/* Question type indicator */}
             <Box sx={{ mt: 2 }}>
-              <Chip 
-                label={question.type === 'radio' ? 'Single Choice' : 
-                       question.type === 'checkbox' ? 'Multiple Choice' :
-                       question.type === 'comment' ? 'Long Text' :
-                       question.type === 'text' ? 'Short Text' :
-                       question.type === 'rating' ? 'Rating' :
-                       question.type === 'boolean' ? 'Yes/No' :
-                       question.type === 'file' ? 'File Upload' :
-                       question.type === 'email' ? 'Email' :
-                       question.type === 'number' ? 'Number' : question.type}
+              <Chip
+                label={question.type === 'radio' ? 'Single Choice' :
+                  question.type === 'checkbox' ? 'Multiple Choice' :
+                    question.type === 'comment' ? 'Long Text' :
+                      question.type === 'text' ? 'Short Text' :
+                        question.type === 'rating' ? 'Rating' :
+                          question.type === 'boolean' ? 'Yes/No' :
+                            question.type === 'file' ? 'File Upload' :
+                              question.type === 'email' ? 'Email' :
+                                question.type === 'number' ? 'Number' : question.type}
                 size="small"
-                sx={{ 
+                sx={{
                   backgroundColor: question.required ? '#e74c3c' : '#3498db',
                   color: 'white',
                   fontWeight: 500
                 }}
               />
               {question.required && (
-                <Chip 
-                  label="Required" 
-                  size="small" 
-                  sx={{ 
+                <Chip
+                  label="Required"
+                  size="small"
+                  sx={{
                     ml: 1,
                     backgroundColor: '#e74c3c',
                     color: 'white',
@@ -328,18 +328,18 @@ const FeedbackFormCreator = ({ eventId, onSave, onCancel }) => {
             </Box>
           </Box>
         ))}
-        
+
         <Button
           startIcon={<AddIcon />}
           onClick={addQuestion}
           variant="outlined"
-          sx={{ 
+          sx={{
             mt: 2,
             borderColor: '#27ae60',
             color: '#27ae60',
-            '&:hover': { 
-              borderColor: '#229954', 
-              backgroundColor: 'rgba(39, 174, 96, 0.1)' 
+            '&:hover': {
+              borderColor: '#229954',
+              backgroundColor: 'rgba(39, 174, 96, 0.1)'
             }
           }}
         >
