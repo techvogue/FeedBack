@@ -46,4 +46,11 @@ router.post(
   feedbackController.uploadFeedbackFile
 );
 
+// Delete feedback form and all responses (protected, owner only)
+router.delete(
+  '/forms/:eventId',
+  passport.authenticate('jwt', { session: false }),
+  feedbackController.deleteFeedbackFormAndResponses
+);
+
 module.exports = router; 

@@ -204,4 +204,31 @@ exports.uploadFeedbackFile = async (req, res) => {
     console.error('Upload feedback file error:', error);
     res.status(500).json({ message: 'Failed to upload file' });
   }
+};
+
+// Delete feedback form and all responses for an event (owner only)
+exports.deleteFeedbackFormAndResponses = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const userId = req.user.id;
+
+    // Check if event exists and user owns it
+    const event = await prisma.event.findUnique({ where: { id: eventId } });
+    if (!event) {
+      return res.status(404).json({ message: 'Event not found' });
+    }
+    if (event.ownerId !== userId) {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+
+    // Delete all feedback responses for this event
+    await prisma.feedbackResponse.deleteMany({ where: { eventId } });
+    // Delete the feedback form for this event
+    await prisma.feedbackForm.deleteMany({ where: { eventId } });
+
+    res.json({ message: 'Feedback form and all responses deleted successfully.' });
+  } catch (error) {
+    console.error('Delete feedback form and responses error:', error);
+    res.status(500).json({ message: 'Failed to delete feedback form and responses' });
+  }
 }; 

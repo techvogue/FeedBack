@@ -38,7 +38,7 @@ const EventDetail = () => {
         const response = await axios.get(`/events/${id}`);
         setEvent(response.data);
         
-        // Check if feedback form exists
+
         try {
           const feedbackResponse = await axios.get(`/feedback/forms/${id}`);
           setHasFeedbackForm(true);
@@ -118,7 +118,7 @@ const EventDetail = () => {
       px: 2
     }}>
       <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
-        {/* Back Button */}
+    
         <Box sx={{ mb: 3 }}>
           <Button
             startIcon={<ArrowBackIcon />}
@@ -138,7 +138,7 @@ const EventDetail = () => {
         </Box>
 
         <Grid container spacing={3}>
-          {/* Event Details */}
+          
           <Grid item xs={12} md={8}>
             <Paper
               sx={{
@@ -179,7 +179,7 @@ const EventDetail = () => {
             </Paper>
           </Grid>
 
-          {/* Action Buttons */}
+
           <Grid item xs={12} md={4}>
             <Paper
               sx={{
@@ -191,7 +191,7 @@ const EventDetail = () => {
               }}
             >
               {isOwner ? (
-                // Owner view
+              
                 <>
                   {!hasFeedbackForm ? (
                     <Button
@@ -264,7 +264,7 @@ const EventDetail = () => {
                   )}
                 </>
               ) : (
-                // Public view
+                
                 hasFeedbackForm && (
                   <>
                     <Button

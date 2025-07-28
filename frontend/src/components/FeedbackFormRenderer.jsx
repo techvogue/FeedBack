@@ -80,7 +80,7 @@ const FeedbackFormRenderer = ({ eventId, onComplete }) => {
             root: "sv_q_comment",
             input: "sv_q_comment_input"
           },
-          radio: {
+          radiogroup: {
             root: "sv_q_radio",
             item: "sv_q_radio_item",
             label: "sv_q_radio_label"
@@ -324,7 +324,11 @@ const FeedbackFormRenderer = ({ eventId, onComplete }) => {
           '& .sv_q_rating_item': {
             fontSize: '1.5rem',
             color: '#f39c12',
-            margin: '0 4px'
+            margin: '0 4px',
+            cursor: 'pointer',
+            '&:hover': {
+              color: '#e67e22'
+            }
           },
           '& .sv_q_boolean_item': {
             padding: '12px',

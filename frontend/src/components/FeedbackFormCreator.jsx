@@ -88,13 +88,53 @@ const FeedbackFormCreator = ({ eventId, onSave, onCancel }) => {
 
     try {
       const schema = {
-        questions: questions.map(q => ({
-          name: `question_${q.id}`,
-          type: q.type,
-          title: q.question,
-          isRequired: q.required,
-          choices: q.options.length > 0 ? q.options : undefined
-        }))
+        questions: questions.map(q => {
+          // Create a clean name from the question text
+          const cleanName = q.question.trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9\s]/g, '') // Remove special characters
+            .replace(/\s+/g, '_') // Replace spaces with underscores
+            .replace(/^_+|_+$/g, ''); // Remove leading/trailing underscores
+
+          // Normalize type for SurveyJS compatibility and analytics
+          let normalizedType = q.type;
+          let inputType = undefined;
+
+          if (q.type === 'radio') normalizedType = 'radiogroup';
+          if (q.type === 'comment') normalizedType = 'text';
+          if (q.type === 'number') {
+            normalizedType = 'text';
+            inputType = 'number';
+          }
+          if (q.type === 'boolean') normalizedType = 'boolean';
+          if (q.type === 'rating') normalizedType = 'rating';
+
+          const questionObj = {
+            name: cleanName,
+            type: normalizedType,
+            title: q.question,
+            isRequired: q.required
+          };
+
+          // Add choices for multiple choice questions
+          if (['radio', 'checkbox'].includes(q.type) && q.options.length > 0) {
+            questionObj.choices = q.options;
+          }
+
+          // Add inputType for number questions
+          if (inputType) {
+            questionObj.inputType = inputType;
+          }
+
+          // Add specific properties for rating questions
+          if (q.type === 'rating') {
+            questionObj.rateMax = 5;
+            questionObj.rateMin = 1;
+            questionObj.rateStep = 1;
+          }
+
+          return questionObj;
+        })
       };
 
       await axios.post(`/feedback/forms/${eventId}`, { schema });
@@ -115,9 +155,7 @@ const FeedbackFormCreator = ({ eventId, onSave, onCancel }) => {
       boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
     }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#2c3e50' }}>
-          Create Feedback Form
-        </Typography>
+
         <Box sx={{ display: 'flex', gap: 2 }}>
           <Button
             startIcon={<ArrowBackIcon />}
@@ -210,9 +248,9 @@ const FeedbackFormCreator = ({ eventId, onSave, onCancel }) => {
                   <MenuItem value="checkbox">Multiple Choice</MenuItem>
                   <MenuItem value="rating">Rating (1-5)</MenuItem>
                   <MenuItem value="boolean">Yes/No</MenuItem>
+                  <MenuItem value="number">Number</MenuItem>
                   <MenuItem value="file">File Upload</MenuItem>
                   <MenuItem value="email">Email</MenuItem>
-                  <MenuItem value="number">Number</MenuItem>
                 </Select>
               </FormControl>
               <FormControl sx={{ minWidth: 120 }}>
@@ -301,11 +339,11 @@ const FeedbackFormCreator = ({ eventId, onSave, onCancel }) => {
                   question.type === 'checkbox' ? 'Multiple Choice' :
                     question.type === 'comment' ? 'Long Text' :
                       question.type === 'text' ? 'Short Text' :
-                        question.type === 'rating' ? 'Rating' :
+                        question.type === 'rating' ? 'Rating (1-5)' :
                           question.type === 'boolean' ? 'Yes/No' :
-                            question.type === 'file' ? 'File Upload' :
-                              question.type === 'email' ? 'Email' :
-                                question.type === 'number' ? 'Number' : question.type}
+                            question.type === 'number' ? 'Number' :
+                              question.type === 'file' ? 'File Upload' :
+                                question.type === 'email' ? 'Email' : question.type}
                 size="small"
                 sx={{
                   backgroundColor: question.required ? '#e74c3c' : '#3498db',

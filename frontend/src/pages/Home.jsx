@@ -128,7 +128,7 @@ const Home = () => {
         </Grid>
       </Grid>
 
-      {/* CTA Section */}
+     
       <Box
         sx={{
           textAlign: 'center',

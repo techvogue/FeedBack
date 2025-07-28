@@ -11,14 +11,14 @@ const FeedbackPage = () => {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    // If user is not authenticated, redirect to login with return URL
+   
     if (!isAuthenticated) {
       navigate(`/login?redirect=/feedback/${eventId}`);
       return;
     }
   }, [isAuthenticated, navigate, eventId]);
 
-  // Show loading while checking authentication
+
   if (!isAuthenticated) {
     return (
       <Box sx={{ 
@@ -45,7 +45,7 @@ const FeedbackPage = () => {
       px: 2
     }}>
       <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
-        {/* Back Button */}
+        
         <Box sx={{ mb: 3 }}>
           <Button
             startIcon={<ArrowBackIcon />}

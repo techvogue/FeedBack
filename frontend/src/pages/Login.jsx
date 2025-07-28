@@ -28,7 +28,6 @@ const Login = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      // Check for redirect parameter in URL
       const urlParams = new URLSearchParams(location.search);
       const redirect = urlParams.get('redirect');
 

@@ -1,11 +1,10 @@
-// src/components/MyEvents.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from "../api/axiosInstance";
 import {
   Box,
   Typography,
-  Grid, // Keep Grid for its layout capabilities
+  Grid,
   Container,
   Button,
   CircularProgress,
@@ -18,7 +17,7 @@ import {
   Add as AddIcon,
 } from "@mui/icons-material";
 
-import EventCard from '../components/EventCard'; // <--- Ensure this path is correct: '../components/EventCard' or './EventCard' based on actual structure
+import EventCard from '../components/EventCard';
 
 export default function MyEvents() {
   const navigate = useNavigate();
@@ -26,12 +25,12 @@ export default function MyEvents() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Use useCallback to memoize fetchEvents to prevent unnecessary re-creation
+  
   const fetchEvents = useCallback(async () => {
     try {
       setLoading(true);
-      setError(""); // Clear previous errors
-      const response = await axios.get("/events"); // This fetches ALL events, not just user's
+      setError("");
+      const response = await axios.get("/events"); 
       setEvents(response.data);
     } catch (err) {
       setError("Failed to load events");
@@ -39,16 +38,16 @@ export default function MyEvents() {
     } finally {
       setLoading(false);
     }
-  }, []); // Empty dependency array means it's created once
+  }, []); 
 
   useEffect(() => {
     fetchEvents();
-  }, [fetchEvents]); // Dependency on fetchEvents (memoized)
+  }, [fetchEvents]); 
 
   const handleDeleteEvent = async (eventId) => {
     if (window.confirm('Are you sure you want to delete this event?')) {
       try {
-        await axios.delete(`/events/${eventId}`); // Use DELETE endpoint
+        await axios.delete(`/events/${eventId}`); 
         setEvents(prevEvents => prevEvents.filter(event => event.id !== eventId));
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to delete event.');
@@ -82,7 +81,7 @@ export default function MyEvents() {
           boxShadow: '0 8px 32px 0 rgba(31,38,135,0.37)',
         }}
       >
-        {/* Header */}
+       
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Button
@@ -104,14 +103,13 @@ export default function MyEvents() {
           </Button>
         </Box>
 
-        {/* Error Alert */}
         {error && (
           <Alert severity="error" sx={{ mb: 3 }}>
             {error}
           </Alert>
         )}
 
-        {/* Events Grid */}
+
         {events.length === 0 ? (
           <Box sx={{ textAlign: 'center', py: 8 }}>
             <EventIcon sx={{ fontSize: 80, color: '#1976d2', mb: 3, opacity: 0.7 }} />
@@ -145,9 +143,7 @@ export default function MyEvents() {
         ) : (
           <Grid container spacing={3}>
             {events.map((event) => (
-              // <--- CRITICAL CHANGE HERE: lg={6} instead of lg={4}
               <Grid item xs={12} md={6} lg={6} key={event.id}>
-                {/* Use the new EventCard component */}
                 <EventCard
                   event={event}
                   onDelete={handleDeleteEvent}
