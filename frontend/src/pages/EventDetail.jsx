@@ -1,20 +1,25 @@
-import { ArrowBack as ArrowBackIcon, Edit as EditIcon, Share as ShareIcon, Visibility as ViewIcon } from '@mui/icons-material';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import {
-  Alert,
   Box,
+  Typography,
+  Paper,
   Button,
   CircularProgress,
-  Container,
+  Alert,
   Grid,
-  Paper,
-  Typography
 } from '@mui/material';
-import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { useNavigate, useParams } from 'react-router-dom';
-import axios from '../api/axiosInstance';
+import {
+  ArrowBack as ArrowBackIcon,
+  Edit as EditIcon,
+  Share as ShareIcon,
+  Visibility as ViewIcon,
+  Assessment as AssessmentIcon,
+} from '@mui/icons-material';
 import FeedbackFormCreator from '../components/FeedbackFormCreator';
 import FeedbackShare from '../components/FeedbackShare';
+import axios from '../api/axiosInstance';
 
 const EventDetail = () => {
   const { id } = useParams();
@@ -23,21 +28,19 @@ const EventDetail = () => {
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [hasFeedbackForm, setHasFeedbackForm] = useState(false);
   const [showFormCreator, setShowFormCreator] = useState(false);
   const [showShare, setShowShare] = useState(false);
-  const [hasFeedbackForm, setHasFeedbackForm] = useState(false);
 
   useEffect(() => {
     const fetchEvent = async () => {
       try {
-        setLoading(true);
-        setError('');
-        const res = await axios.get(`/events/${id}`);
-        setEvent(res.data);
-
+        const response = await axios.get(`/events/${id}`);
+        setEvent(response.data);
+        
         // Check if feedback form exists
         try {
-          const feedbackRes = await axios.get(`/feedback/forms/${id}`);
+          const feedbackResponse = await axios.get(`/feedback/forms/${id}`);
           setHasFeedbackForm(true);
         } catch (err) {
           setHasFeedbackForm(false);
@@ -48,66 +51,94 @@ const EventDetail = () => {
         setLoading(false);
       }
     };
+
     fetchEvent();
   }, [id]);
 
-  const isOwner = user && event && user.id === event.owner?.id;
-
-
-
-  if (loading) {
-    return (
-      <Container maxWidth="md" sx={{ py: 6 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-          <CircularProgress size={60} />
-        </Box>
-      </Container>
-    );
-  }
-
-  if (error) {
-    return (
-      <Container maxWidth="md" sx={{ py: 6 }}>
-        <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>
-      </Container>
-    );
-  }
-
-  if (!event) return null;
-
-  const eventDate = new Date(event.date);
-  const formattedDate = eventDate.toLocaleDateString('en-US', {
-    weekday: 'long', year: 'numeric', month: 'short', day: 'numeric'
-  });
-  const formattedTime = eventDate.toLocaleTimeString('en-US', {
-    hour: '2-digit', minute: '2-digit'
-  });
-
-  const handleFeedbackFormSaved = () => {
-    setShowFormCreator(false);
-    setHasFeedbackForm(true);
-  };
-
   const handleShowFormCreator = () => {
     setShowFormCreator(true);
+  };
+
+  const handleFormSaved = () => {
+    setShowFormCreator(false);
+    setHasFeedbackForm(true);
   };
 
   const handleGiveFeedback = () => {
     navigate(`/feedback/${id}`);
   };
 
+  const handleViewResponses = () => {
+    navigate(`/events/${id}/responses`);
+  };
 
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Alert severity="error" sx={{ m: 2 }}>
+        {error}
+      </Alert>
+    );
+  }
+
+  if (!event) {
+    return (
+      <Alert severity="error" sx={{ m: 2 }}>
+        Event not found
+      </Alert>
+    );
+  }
+
+  const isOwner = user && event.owner?.id === user.id;
+  const formattedDate = new Date(event.date).toLocaleDateString();
+  const formattedTime = new Date(event.date).toLocaleTimeString();
+
+  if (showFormCreator) {
+    return (
+      <FeedbackFormCreator
+        eventId={id}
+        onSave={handleFormSaved}
+        onCancel={() => setShowFormCreator(false)}
+      />
+    );
+  }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 6 }}>
-      {showFormCreator ? (
-        <FeedbackFormCreator
-          eventId={id}
-          onSave={handleFeedbackFormSaved}
-          onCancel={() => setShowFormCreator(false)}
-        />
-      ) : (
+    <Box sx={{ 
+      minHeight: '100vh', 
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      py: 4,
+      px: 2
+    }}>
+      <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
+        {/* Back Button */}
+        <Box sx={{ mb: 3 }}>
+          <Button
+            startIcon={<ArrowBackIcon />}
+            onClick={() => navigate(-1)}
+            variant="outlined"
+            sx={{
+              color: 'white',
+              borderColor: 'rgba(255,255,255,0.3)',
+              '&:hover': {
+                borderColor: 'white',
+                backgroundColor: 'rgba(255,255,255,0.1)'
+              }
+            }}
+          >
+            Back
+          </Button>
+        </Box>
+
         <Grid container spacing={3}>
+          {/* Event Details */}
           <Grid item xs={12} md={8}>
             <Paper
               sx={{
@@ -118,21 +149,17 @@ const EventDetail = () => {
                 overflow: 'hidden',
               }}
             >
-              <Box sx={{ width: '100%', height: 220, overflow: 'hidden', background: '#f5f5f5' }}>
-                <img
-                  src={event.bannerUrl || 'https://via.placeholder.com/600x220?text=Event+Banner'}
-                  alt={event.title}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                />
-              </Box>
+              <Box
+                component="img"
+                src={event.bannerUrl}
+                alt={event.title}
+                sx={{
+                  width: '100%',
+                  height: 300,
+                  objectFit: 'cover',
+                }}
+              />
               <Box sx={{ p: 4 }}>
-                <Button
-                  startIcon={<ArrowBackIcon />}
-                  onClick={() => navigate(-1)}
-                  sx={{ mb: 2 }}
-                >
-                  Back
-                </Button>
                 <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 2, color: '#2c3e50' }}>
                   {event.title}
                 </Typography>
@@ -152,18 +179,26 @@ const EventDetail = () => {
             </Paper>
           </Grid>
 
+          {/* Action Buttons */}
           <Grid item xs={12} md={4}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-
+            <Paper
+              sx={{
+                p: 3,
+                background: 'rgba(255,255,255,0.98)',
+                borderRadius: 3,
+                boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+                height: 'fit-content',
+              }}
+            >
               {isOwner ? (
-                // Owner controls
+                // Owner view
                 <>
                   {!hasFeedbackForm ? (
                     <Button
                       variant="contained"
                       fullWidth
                       onClick={handleShowFormCreator}
-                      sx={{
+                      sx={{ 
                         py: 2,
                         backgroundColor: '#3498db',
                         '&:hover': { backgroundColor: '#2980b9' }
@@ -202,6 +237,19 @@ const EventDetail = () => {
                       <Button
                         variant="outlined"
                         fullWidth
+                        startIcon={<AssessmentIcon />}
+                        onClick={handleViewResponses}
+                        sx={{
+                          borderColor: '#9b59b6',
+                          color: '#9b59b6',
+                          '&:hover': { borderColor: '#8e44ad', backgroundColor: 'rgba(155, 89, 182, 0.1)' }
+                        }}
+                      >
+                        See Responses
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        fullWidth
                         startIcon={<ShareIcon />}
                         onClick={() => setShowShare(!showShare)}
                         sx={{
@@ -223,7 +271,7 @@ const EventDetail = () => {
                       variant="contained"
                       fullWidth
                       onClick={handleGiveFeedback}
-                      sx={{
+                      sx={{ 
                         py: 2,
                         backgroundColor: '#27ae60',
                         '&:hover': { backgroundColor: '#229954' }
@@ -231,9 +279,9 @@ const EventDetail = () => {
                     >
                       Give Feedback
                     </Button>
-                    <Typography variant="body2" sx={{
-                      mt: 1,
-                      textAlign: 'center',
+                    <Typography variant="body2" sx={{ 
+                      mt: 1, 
+                      textAlign: 'center', 
                       color: '#7f8c8d',
                       fontSize: '0.9rem'
                     }}>
@@ -243,16 +291,16 @@ const EventDetail = () => {
                 )
               )}
 
-
-
               {showShare && hasFeedbackForm && (
-                <FeedbackShare eventId={id} />
+                <Box sx={{ mt: 3 }}>
+                  <FeedbackShare eventId={id} />
+                </Box>
               )}
-            </Box>
+            </Paper>
           </Grid>
         </Grid>
-      )}
-    </Container>
+      </Box>
+    </Box>
   );
 };
 

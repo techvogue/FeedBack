@@ -168,7 +168,6 @@ const googleCallback = async (req, res) => {
 
     // Get the redirect parameter from session
     const redirect = req.session?.redirect;
-    console.log('Google callback - Redirect from session:', redirect);
 
     // Clear the redirect from session
     if (req.session) {

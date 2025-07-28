@@ -167,6 +167,15 @@ exports.getFeedbackResponses = async (req, res) => {
 
     const responses = await prisma.feedbackResponse.findMany({
       where: { eventId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        }
+      },
       orderBy: { submittedAt: 'desc' }
     });
 

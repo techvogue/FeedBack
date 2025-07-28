@@ -62,13 +62,10 @@ const Login = () => {
     const urlParams = new URLSearchParams(location.search);
     const redirect = urlParams.get('redirect');
 
-    console.log('Login - Redirect parameter:', redirect);
-
     const googleUrl = redirect
       ? `${apiUrl}/auth/google?redirect=${encodeURIComponent(redirect)}`
       : `${apiUrl}/auth/google`;
 
-    console.log('Google OAuth URL:', googleUrl);
     window.location.href = googleUrl;
   };
 

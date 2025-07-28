@@ -22,7 +22,6 @@ router.get('/google', (req, res, next) => {
   // Store redirect parameter in session
   if (req.query.redirect) {
     req.session.redirect = req.query.redirect;
-    console.log('Stored redirect in session:', req.query.redirect);
   }
   passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
 });

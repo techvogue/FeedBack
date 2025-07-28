@@ -31,13 +31,10 @@ const OAuthSuccess = () => {
 
           // Check for redirect parameter in URL
           const redirect = searchParams.get('redirect');
-          console.log('OAuth Success - Redirect parameter:', redirect);
 
           if (redirect) {
-            console.log('Redirecting to:', redirect);
             navigate(redirect, { replace: true });
           } else {
-            console.log('No redirect, going to dashboard');
             navigate('/dashboard', { replace: true });
           }
         } catch (error) {

@@ -1,22 +1,23 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Provider } from 'react-redux';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
-import store from './redux/store';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import React from 'react';
+import { Provider } from 'react-redux';
+import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import './App.css';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
+import AddEvent from './pages/AddEvent';
+import Dashboard from './pages/Dashboard';
+import EditEvent from './pages/EditEvent';
+import EventDetail from './pages/EventDetail';
+import FeedbackPage from './pages/FeedbackPage';
+import FeedbackResponsesPage from './pages/FeedbackResponsesPage';
 import Home from './pages/Home';
 import Login from './pages/Login';
-import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
-import AddEvent from './pages/AddEvent';
 import MyEvents from './pages/MyEvents';
 import OAuthSuccess from './pages/OAuthSuccess';
-import EventDetail from './pages/EventDetail';
-import EditEvent from './pages/EditEvent';
-import FeedbackPage from './pages/FeedbackPage';
-import './App.css';
+import Register from './pages/Register';
+import store from './redux/store';
 
 // Create theme with glassmorphism support
 const theme = createTheme({
@@ -89,6 +90,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <EventDetail />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/events/:eventId/responses"
+                  element={
+                    <ProtectedRoute>
+                      <FeedbackResponsesPage />
                     </ProtectedRoute>
                   }
                 />
