@@ -44,7 +44,7 @@ async function migrateFeedbackForms() {
           if (question.type === 'radio') {
             updatedQuestion.type = 'radiogroup';
           } else if (question.type === 'text' && question.inputType === 'number') {
-            updatedQuestion.type = 'text';
+            updatedQuestion.type = 'number';
             updatedQuestion.inputType = 'number';
           } else if (question.type === 'rating') {
             updatedQuestion.rateMax = question.rateMax || 5;

@@ -26,6 +26,7 @@ model Event {
   description    String
   date           DateTime
   bannerUrl      String
+   ticketPrice Decimal?  @db.Decimal(10, 2)  // Optional ticket price with 2 decimal places
   ownerId        String
   owner          User           @relation(fields: [ownerId], references: [id])
   createdAt      DateTime       @default(now())

@@ -15,6 +15,7 @@ require('./config/passport-google')(passport);
 const authRoutes = require('./routes/auth');
 const dashboardRoutes = require('./routes/dashboard');
 const feedbackRoutes = require('./routes/feedback');
+const aiRoutes = require('./routes/aiRoutes');
 
 const app = express();
 
@@ -48,6 +49,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/events', require('./routes/event'));
 app.use('/api/feedback', feedbackRoutes);
+
+app.use('/api', aiRoutes);
 
 // Health check route
 app.get('/api/health', (req, res) => {

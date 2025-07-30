@@ -2342,8 +2342,18 @@ export namespace Prisma {
 
   export type AggregateEvent = {
     _count: EventCountAggregateOutputType | null
+    _avg: EventAvgAggregateOutputType | null
+    _sum: EventSumAggregateOutputType | null
     _min: EventMinAggregateOutputType | null
     _max: EventMaxAggregateOutputType | null
+  }
+
+  export type EventAvgAggregateOutputType = {
+    ticketPrice: Decimal | null
+  }
+
+  export type EventSumAggregateOutputType = {
+    ticketPrice: Decimal | null
   }
 
   export type EventMinAggregateOutputType = {
@@ -2352,6 +2362,7 @@ export namespace Prisma {
     description: string | null
     date: Date | null
     bannerUrl: string | null
+    ticketPrice: Decimal | null
     ownerId: string | null
     createdAt: Date | null
   }
@@ -2362,6 +2373,7 @@ export namespace Prisma {
     description: string | null
     date: Date | null
     bannerUrl: string | null
+    ticketPrice: Decimal | null
     ownerId: string | null
     createdAt: Date | null
   }
@@ -2372,11 +2384,20 @@ export namespace Prisma {
     description: number
     date: number
     bannerUrl: number
+    ticketPrice: number
     ownerId: number
     createdAt: number
     _all: number
   }
 
+
+  export type EventAvgAggregateInputType = {
+    ticketPrice?: true
+  }
+
+  export type EventSumAggregateInputType = {
+    ticketPrice?: true
+  }
 
   export type EventMinAggregateInputType = {
     id?: true
@@ -2384,6 +2405,7 @@ export namespace Prisma {
     description?: true
     date?: true
     bannerUrl?: true
+    ticketPrice?: true
     ownerId?: true
     createdAt?: true
   }
@@ -2394,6 +2416,7 @@ export namespace Prisma {
     description?: true
     date?: true
     bannerUrl?: true
+    ticketPrice?: true
     ownerId?: true
     createdAt?: true
   }
@@ -2404,6 +2427,7 @@ export namespace Prisma {
     description?: true
     date?: true
     bannerUrl?: true
+    ticketPrice?: true
     ownerId?: true
     createdAt?: true
     _all?: true
@@ -2447,6 +2471,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: EventAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: EventSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: EventMinAggregateInputType
@@ -2477,6 +2513,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: EventCountAggregateInputType | true
+    _avg?: EventAvgAggregateInputType
+    _sum?: EventSumAggregateInputType
     _min?: EventMinAggregateInputType
     _max?: EventMaxAggregateInputType
   }
@@ -2487,9 +2525,12 @@ export namespace Prisma {
     description: string
     date: Date
     bannerUrl: string
+    ticketPrice: Decimal | null
     ownerId: string
     createdAt: Date
     _count: EventCountAggregateOutputType | null
+    _avg: EventAvgAggregateOutputType | null
+    _sum: EventSumAggregateOutputType | null
     _min: EventMinAggregateOutputType | null
     _max: EventMaxAggregateOutputType | null
   }
@@ -2514,6 +2555,7 @@ export namespace Prisma {
     description?: boolean
     date?: boolean
     bannerUrl?: boolean
+    ticketPrice?: boolean
     ownerId?: boolean
     createdAt?: boolean
     owner?: boolean | UserDefaultArgs<ExtArgs>
@@ -2528,6 +2570,7 @@ export namespace Prisma {
     description?: boolean
     date?: boolean
     bannerUrl?: boolean
+    ticketPrice?: boolean
     ownerId?: boolean
     createdAt?: boolean
     owner?: boolean | UserDefaultArgs<ExtArgs>
@@ -2539,6 +2582,7 @@ export namespace Prisma {
     description?: boolean
     date?: boolean
     bannerUrl?: boolean
+    ticketPrice?: boolean
     ownerId?: boolean
     createdAt?: boolean
     owner?: boolean | UserDefaultArgs<ExtArgs>
@@ -2550,11 +2594,12 @@ export namespace Prisma {
     description?: boolean
     date?: boolean
     bannerUrl?: boolean
+    ticketPrice?: boolean
     ownerId?: boolean
     createdAt?: boolean
   }
 
-  export type EventOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "date" | "bannerUrl" | "ownerId" | "createdAt", ExtArgs["result"]["event"]>
+  export type EventOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "date" | "bannerUrl" | "ticketPrice" | "ownerId" | "createdAt", ExtArgs["result"]["event"]>
   export type EventInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     owner?: boolean | UserDefaultArgs<ExtArgs>
     feedbackForm?: boolean | Event$feedbackFormArgs<ExtArgs>
@@ -2581,6 +2626,7 @@ export namespace Prisma {
       description: string
       date: Date
       bannerUrl: string
+      ticketPrice: Prisma.Decimal | null
       ownerId: string
       createdAt: Date
     }, ExtArgs["result"]["event"]>
@@ -3014,6 +3060,7 @@ export namespace Prisma {
     readonly description: FieldRef<"Event", 'String'>
     readonly date: FieldRef<"Event", 'DateTime'>
     readonly bannerUrl: FieldRef<"Event", 'String'>
+    readonly ticketPrice: FieldRef<"Event", 'Decimal'>
     readonly ownerId: FieldRef<"Event", 'String'>
     readonly createdAt: FieldRef<"Event", 'DateTime'>
   }
@@ -5596,6 +5643,7 @@ export namespace Prisma {
     description: 'description',
     date: 'date',
     bannerUrl: 'bannerUrl',
+    ticketPrice: 'ticketPrice',
     ownerId: 'ownerId',
     createdAt: 'createdAt'
   };
@@ -5693,6 +5741,20 @@ export namespace Prisma {
    * Reference to a field of type 'DateTime[]'
    */
   export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'Decimal'
+   */
+  export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
+    
+
+
+  /**
+   * Reference to a field of type 'Decimal[]'
+   */
+  export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal[]'>
     
 
 
@@ -5804,6 +5866,7 @@ export namespace Prisma {
     description?: StringFilter<"Event"> | string
     date?: DateTimeFilter<"Event"> | Date | string
     bannerUrl?: StringFilter<"Event"> | string
+    ticketPrice?: DecimalNullableFilter<"Event"> | Decimal | DecimalJsLike | number | string | null
     ownerId?: StringFilter<"Event"> | string
     createdAt?: DateTimeFilter<"Event"> | Date | string
     owner?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -5817,6 +5880,7 @@ export namespace Prisma {
     description?: SortOrder
     date?: SortOrder
     bannerUrl?: SortOrder
+    ticketPrice?: SortOrderInput | SortOrder
     ownerId?: SortOrder
     createdAt?: SortOrder
     owner?: UserOrderByWithRelationInput
@@ -5833,6 +5897,7 @@ export namespace Prisma {
     description?: StringFilter<"Event"> | string
     date?: DateTimeFilter<"Event"> | Date | string
     bannerUrl?: StringFilter<"Event"> | string
+    ticketPrice?: DecimalNullableFilter<"Event"> | Decimal | DecimalJsLike | number | string | null
     ownerId?: StringFilter<"Event"> | string
     createdAt?: DateTimeFilter<"Event"> | Date | string
     owner?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -5846,11 +5911,14 @@ export namespace Prisma {
     description?: SortOrder
     date?: SortOrder
     bannerUrl?: SortOrder
+    ticketPrice?: SortOrderInput | SortOrder
     ownerId?: SortOrder
     createdAt?: SortOrder
     _count?: EventCountOrderByAggregateInput
+    _avg?: EventAvgOrderByAggregateInput
     _max?: EventMaxOrderByAggregateInput
     _min?: EventMinOrderByAggregateInput
+    _sum?: EventSumOrderByAggregateInput
   }
 
   export type EventScalarWhereWithAggregatesInput = {
@@ -5862,6 +5930,7 @@ export namespace Prisma {
     description?: StringWithAggregatesFilter<"Event"> | string
     date?: DateTimeWithAggregatesFilter<"Event"> | Date | string
     bannerUrl?: StringWithAggregatesFilter<"Event"> | string
+    ticketPrice?: DecimalNullableWithAggregatesFilter<"Event"> | Decimal | DecimalJsLike | number | string | null
     ownerId?: StringWithAggregatesFilter<"Event"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Event"> | Date | string
   }
@@ -6053,6 +6122,7 @@ export namespace Prisma {
     description: string
     date: Date | string
     bannerUrl: string
+    ticketPrice?: Decimal | DecimalJsLike | number | string | null
     createdAt?: Date | string
     owner: UserCreateNestedOneWithoutEventsInput
     feedbackForm?: FeedbackFormCreateNestedOneWithoutEventInput
@@ -6065,6 +6135,7 @@ export namespace Prisma {
     description: string
     date: Date | string
     bannerUrl: string
+    ticketPrice?: Decimal | DecimalJsLike | number | string | null
     ownerId: string
     createdAt?: Date | string
     feedbackForm?: FeedbackFormUncheckedCreateNestedOneWithoutEventInput
@@ -6077,6 +6148,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     bannerUrl?: StringFieldUpdateOperationsInput | string
+    ticketPrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     owner?: UserUpdateOneRequiredWithoutEventsNestedInput
     feedbackForm?: FeedbackFormUpdateOneWithoutEventNestedInput
@@ -6089,6 +6161,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     bannerUrl?: StringFieldUpdateOperationsInput | string
+    ticketPrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     ownerId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     feedbackForm?: FeedbackFormUncheckedUpdateOneWithoutEventNestedInput
@@ -6101,6 +6174,7 @@ export namespace Prisma {
     description: string
     date: Date | string
     bannerUrl: string
+    ticketPrice?: Decimal | DecimalJsLike | number | string | null
     ownerId: string
     createdAt?: Date | string
   }
@@ -6111,6 +6185,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     bannerUrl?: StringFieldUpdateOperationsInput | string
+    ticketPrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -6120,6 +6195,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     bannerUrl?: StringFieldUpdateOperationsInput | string
+    ticketPrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     ownerId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -6365,6 +6441,17 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
+  export type DecimalNullableFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+  }
+
   export type UserScalarRelationFilter = {
     is?: UserWhereInput
     isNot?: UserWhereInput
@@ -6381,8 +6468,13 @@ export namespace Prisma {
     description?: SortOrder
     date?: SortOrder
     bannerUrl?: SortOrder
+    ticketPrice?: SortOrder
     ownerId?: SortOrder
     createdAt?: SortOrder
+  }
+
+  export type EventAvgOrderByAggregateInput = {
+    ticketPrice?: SortOrder
   }
 
   export type EventMaxOrderByAggregateInput = {
@@ -6391,6 +6483,7 @@ export namespace Prisma {
     description?: SortOrder
     date?: SortOrder
     bannerUrl?: SortOrder
+    ticketPrice?: SortOrder
     ownerId?: SortOrder
     createdAt?: SortOrder
   }
@@ -6401,8 +6494,29 @@ export namespace Prisma {
     description?: SortOrder
     date?: SortOrder
     bannerUrl?: SortOrder
+    ticketPrice?: SortOrder
     ownerId?: SortOrder
     createdAt?: SortOrder
+  }
+
+  export type EventSumOrderByAggregateInput = {
+    ticketPrice?: SortOrder
+  }
+
+  export type DecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedDecimalNullableFilter<$PrismaModel>
+    _sum?: NestedDecimalNullableFilter<$PrismaModel>
+    _min?: NestedDecimalNullableFilter<$PrismaModel>
+    _max?: NestedDecimalNullableFilter<$PrismaModel>
   }
   export type JsonFilter<$PrismaModel = never> =
     | PatchUndefined<
@@ -6625,6 +6739,14 @@ export namespace Prisma {
     connect?: FeedbackResponseWhereUniqueInput | FeedbackResponseWhereUniqueInput[]
   }
 
+  export type NullableDecimalFieldUpdateOperationsInput = {
+    set?: Decimal | DecimalJsLike | number | string | null
+    increment?: Decimal | DecimalJsLike | number | string
+    decrement?: Decimal | DecimalJsLike | number | string
+    multiply?: Decimal | DecimalJsLike | number | string
+    divide?: Decimal | DecimalJsLike | number | string
+  }
+
   export type UserUpdateOneRequiredWithoutEventsNestedInput = {
     create?: XOR<UserCreateWithoutEventsInput, UserUncheckedCreateWithoutEventsInput>
     connectOrCreate?: UserCreateOrConnectWithoutEventsInput
@@ -6831,6 +6953,33 @@ export namespace Prisma {
     _min?: NestedDateTimeFilter<$PrismaModel>
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
+
+  export type NestedDecimalNullableFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+  }
+
+  export type NestedDecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedDecimalNullableFilter<$PrismaModel>
+    _sum?: NestedDecimalNullableFilter<$PrismaModel>
+    _min?: NestedDecimalNullableFilter<$PrismaModel>
+    _max?: NestedDecimalNullableFilter<$PrismaModel>
+  }
   export type NestedJsonFilter<$PrismaModel = never> =
     | PatchUndefined<
         Either<Required<NestedJsonFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>,
@@ -6861,6 +7010,7 @@ export namespace Prisma {
     description: string
     date: Date | string
     bannerUrl: string
+    ticketPrice?: Decimal | DecimalJsLike | number | string | null
     createdAt?: Date | string
     feedbackForm?: FeedbackFormCreateNestedOneWithoutEventInput
     feedbackResponses?: FeedbackResponseCreateNestedManyWithoutEventInput
@@ -6872,6 +7022,7 @@ export namespace Prisma {
     description: string
     date: Date | string
     bannerUrl: string
+    ticketPrice?: Decimal | DecimalJsLike | number | string | null
     createdAt?: Date | string
     feedbackForm?: FeedbackFormUncheckedCreateNestedOneWithoutEventInput
     feedbackResponses?: FeedbackResponseUncheckedCreateNestedManyWithoutEventInput
@@ -6936,6 +7087,7 @@ export namespace Prisma {
     description?: StringFilter<"Event"> | string
     date?: DateTimeFilter<"Event"> | Date | string
     bannerUrl?: StringFilter<"Event"> | string
+    ticketPrice?: DecimalNullableFilter<"Event"> | Decimal | DecimalJsLike | number | string | null
     ownerId?: StringFilter<"Event"> | string
     createdAt?: DateTimeFilter<"Event"> | Date | string
   }
@@ -7109,6 +7261,7 @@ export namespace Prisma {
     description: string
     date: Date | string
     bannerUrl: string
+    ticketPrice?: Decimal | DecimalJsLike | number | string | null
     createdAt?: Date | string
     owner: UserCreateNestedOneWithoutEventsInput
     feedbackResponses?: FeedbackResponseCreateNestedManyWithoutEventInput
@@ -7120,6 +7273,7 @@ export namespace Prisma {
     description: string
     date: Date | string
     bannerUrl: string
+    ticketPrice?: Decimal | DecimalJsLike | number | string | null
     ownerId: string
     createdAt?: Date | string
     feedbackResponses?: FeedbackResponseUncheckedCreateNestedManyWithoutEventInput
@@ -7147,6 +7301,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     bannerUrl?: StringFieldUpdateOperationsInput | string
+    ticketPrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     owner?: UserUpdateOneRequiredWithoutEventsNestedInput
     feedbackResponses?: FeedbackResponseUpdateManyWithoutEventNestedInput
@@ -7158,6 +7313,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     bannerUrl?: StringFieldUpdateOperationsInput | string
+    ticketPrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     ownerId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     feedbackResponses?: FeedbackResponseUncheckedUpdateManyWithoutEventNestedInput
@@ -7169,6 +7325,7 @@ export namespace Prisma {
     description: string
     date: Date | string
     bannerUrl: string
+    ticketPrice?: Decimal | DecimalJsLike | number | string | null
     createdAt?: Date | string
     owner: UserCreateNestedOneWithoutEventsInput
     feedbackForm?: FeedbackFormCreateNestedOneWithoutEventInput
@@ -7180,6 +7337,7 @@ export namespace Prisma {
     description: string
     date: Date | string
     bannerUrl: string
+    ticketPrice?: Decimal | DecimalJsLike | number | string | null
     ownerId: string
     createdAt?: Date | string
     feedbackForm?: FeedbackFormUncheckedCreateNestedOneWithoutEventInput
@@ -7234,6 +7392,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     bannerUrl?: StringFieldUpdateOperationsInput | string
+    ticketPrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     owner?: UserUpdateOneRequiredWithoutEventsNestedInput
     feedbackForm?: FeedbackFormUpdateOneWithoutEventNestedInput
@@ -7245,6 +7404,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     bannerUrl?: StringFieldUpdateOperationsInput | string
+    ticketPrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     ownerId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     feedbackForm?: FeedbackFormUncheckedUpdateOneWithoutEventNestedInput
@@ -7289,6 +7449,7 @@ export namespace Prisma {
     description: string
     date: Date | string
     bannerUrl: string
+    ticketPrice?: Decimal | DecimalJsLike | number | string | null
     createdAt?: Date | string
   }
 
@@ -7305,6 +7466,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     bannerUrl?: StringFieldUpdateOperationsInput | string
+    ticketPrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     feedbackForm?: FeedbackFormUpdateOneWithoutEventNestedInput
     feedbackResponses?: FeedbackResponseUpdateManyWithoutEventNestedInput
@@ -7316,6 +7478,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     bannerUrl?: StringFieldUpdateOperationsInput | string
+    ticketPrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     feedbackForm?: FeedbackFormUncheckedUpdateOneWithoutEventNestedInput
     feedbackResponses?: FeedbackResponseUncheckedUpdateManyWithoutEventNestedInput
@@ -7327,6 +7490,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     bannerUrl?: StringFieldUpdateOperationsInput | string
+    ticketPrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 

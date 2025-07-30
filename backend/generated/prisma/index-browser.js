@@ -136,6 +136,7 @@ exports.Prisma.EventScalarFieldEnum = {
   description: 'description',
   date: 'date',
   bannerUrl: 'bannerUrl',
+  ticketPrice: 'ticketPrice',
   ownerId: 'ownerId',
   createdAt: 'createdAt'
 };

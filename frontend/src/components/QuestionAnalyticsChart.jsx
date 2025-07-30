@@ -11,7 +11,7 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tool
 
 export default function QuestionAnalyticsChart({ question, answers }) {
   // One key log: always see what data/metadata you're working with
-  console.log("[AnalyticsChart] Rendering type:", question.type, ", question:", question.title || question.label || question.name);
+  console.log("[AnalyticsChart] Question type:", question.type, "for question:", question.title || question.label || question.name);
 
   const type = question.type || "text";
 

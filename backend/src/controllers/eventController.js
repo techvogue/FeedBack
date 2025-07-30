@@ -9,13 +9,8 @@ const prisma = new PrismaClient();
 
 // Create Event (expecting 'banner' as multipart image field processed by multer-storage-cloudinary)
 exports.createEvent = async (req, res) => {
-  // Add these console logs for debugging. Remove them once it's working.
-  console.log("Backend: Request received for createEvent.");
-  console.log("Backend: req.body (form fields):", req.body);
-  console.log("Backend: req.file (uploaded file info from Multer/Cloudinary):", req.file);
-
   try {
-    const { title, description, date, time } = req.body;
+    const { title, description, date, time, ticketPrice } = req.body;
     const ownerId = req.user.id; // Assuming authenticate middleware sets req.user
 
     let bannerUrl = null;
@@ -34,12 +29,23 @@ exports.createEvent = async (req, res) => {
     // Combine date and time
     const dateTime = new Date(`${date}T${time}`);
 
+    // Validate ticketPrice if provided
+    let validatedPrice = null;
+    if (ticketPrice !== undefined) {
+      const priceNum = parseFloat(ticketPrice);
+      if (isNaN(priceNum) || priceNum < 0) {
+        return res.status(400).json({ error: 'ticketPrice must be a positive number or zero' });
+      }
+      validatedPrice = priceNum;
+    }
+
     const event = await prisma.event.create({
       data: {
         title,
         description,
         date: dateTime,
         bannerUrl: bannerUrl || '', // Save the obtained URL (or an empty string if none)
+        ticketPrice: validatedPrice,
         owner: {
           connect: { id: ownerId },
         },
@@ -83,7 +89,7 @@ exports.getMyEvents = async (req, res) => {
         date: 'desc'
       }
     });
-    
+
     res.json(events);
   } catch (err) {
     console.error('Get events error:', err);
@@ -103,12 +109,14 @@ exports.getEventById = async (req, res) => {
             name: true,
             email: true,
           }
-        }
+        },
+        feedbackForm: true
       }
     });
     if (!event) {
       return res.status(404).json({ message: 'Event not found' });
     }
+    
     res.json(event);
   } catch (err) {
     console.error('Get event by ID error:', err);
@@ -119,8 +127,8 @@ exports.getEventById = async (req, res) => {
 // Update event by ID
 exports.updateEvent = async (req, res) => {
   try {
-    const { title, description, date, time } = req.body;
-    const eventId = req.params.id;
+    const { title, description, date, time, ticketPrice } = req.body;
+    const eventId = parseInt(req.params.id);
     const userId = req.user.id;
 
     // Find event and check ownership
@@ -143,6 +151,20 @@ exports.updateEvent = async (req, res) => {
       dateTime = new Date(`${date}T${time}`);
     }
 
+    // Validate ticketPrice if provided
+    let validatedPrice = event.ticketPrice; // keep existing if not provided
+    if (ticketPrice !== undefined) {
+      if (ticketPrice === null || ticketPrice === '') {
+        validatedPrice = null; // allow clearing the price
+      } else {
+        const priceNum = parseFloat(ticketPrice);
+        if (isNaN(priceNum) || priceNum < 0) {
+          return res.status(400).json({ error: 'ticketPrice must be a positive number or zero' });
+        }
+        validatedPrice = priceNum;
+      }
+    }
+
     const updatedEvent = await prisma.event.update({
       where: { id: eventId },
       data: {
@@ -150,6 +172,7 @@ exports.updateEvent = async (req, res) => {
         description: description ?? event.description,
         date: dateTime,
         bannerUrl,
+        ticketPrice: validatedPrice,
       },
       include: {
         owner: {
@@ -167,7 +190,7 @@ exports.updateEvent = async (req, res) => {
 // Delete event by ID
 exports.deleteEvent = async (req, res) => {
   try {
-    const eventId = req.params.id;
+    const eventId = parseInt(req.params.id);
     const userId = req.user.id;
     const event = await prisma.event.findUnique({ where: { id: eventId } });
     if (!event) {

@@ -101,9 +101,10 @@ const FeedbackFormCreator = ({ eventId, onSave, onCancel }) => {
           let inputType = undefined;
 
           if (q.type === 'radio') normalizedType = 'radiogroup';
+          if (q.type === 'checkbox') normalizedType = 'checkbox';
           if (q.type === 'comment') normalizedType = 'text';
           if (q.type === 'number') {
-            normalizedType = 'text';
+            normalizedType = 'number';
             inputType = 'number';
           }
           if (q.type === 'boolean') normalizedType = 'boolean';
