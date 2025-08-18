@@ -1,204 +1,456 @@
 import {
   AccountCircle,
+  DarkMode,
   Dashboard,
+  Event,
   Home,
+  LightMode,
   Logout,
+  Menu as MenuIcon,
   Person,
+  ConfirmationNumber as TicketIcon,
 } from '@mui/icons-material';
 import {
   AppBar,
   Avatar,
   Box,
   Button,
+  Drawer,
   IconButton,
   Menu,
-  MenuItem,
   Toolbar,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useColorMode } from '../context/ColorModeContext';
 import { logout } from '../redux/slices/authSlice';
 import ProfileModal from './ProfileModal';
 
 const Navbar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  console.log('📍 Current Component: Navbar');
+  const location = useLocation();
+  const theme = useTheme();
   const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const { mode, toggleColorMode } = useColorMode();
 
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [showNavbar, setShowNavbar] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+  const isMobile = useMediaQuery('(max-width: 768px)');
 
-  const handleMenu = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY > lastScrollY && currentScrollY > 80) {
+        setShowNavbar(false);
+      } else {
+        setShowNavbar(true);
+      }
+      setLastScrollY(currentScrollY);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY]);
 
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
+  const handleMenu = (event) => setAnchorEl(event.currentTarget);
+  const handleClose = () => setAnchorEl(null);
   const handleLogout = () => {
     dispatch(logout());
     handleClose();
     navigate('/');
   };
-
   const handleProfileClick = () => {
     setProfileModalOpen(true);
     handleClose();
   };
 
-  const handleAuthClick = () => {
-    navigate('/login');
+  const navItems = [
+    { label: 'Home', icon: <Home />, path: '/' },
+    { label: 'Events', icon: <Event />, path: '/events' },
+    ...(isAuthenticated
+      ? [
+        { label: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
+        { label: 'My Tickets', icon: <TicketIcon />, path: '/my-tickets' },
+      ]
+      : []),
+  ];
+
+  const NavButton = ({ item }) => {
+    const isActive = location.pathname === item.path;
+    return (
+      <Button
+        onClick={() => navigate(item.path)}
+        variant="text"
+        startIcon={item.icon}
+        sx={{
+          textTransform: 'none',
+          fontWeight: isActive ? 'bold' : 'normal',
+          color: isActive
+            ? mode === 'dark' ? 'black' : 'white'
+            : mode === 'dark'
+              ? 'white'
+              : 'black',
+          backgroundColor: isActive
+            ? mode === 'dark' ? 'white' : 'black'
+            : 'transparent',
+          borderRadius: 2,
+          px: 2,
+          py: 1,
+          transition: 'all 0.3s ease',
+          '&:hover': {
+            backgroundColor: mode === 'dark' ? 'white' : 'black',
+            color: mode === 'dark' ? 'black' : 'white',
+            transform: 'translateY(-1px)',
+            boxShadow: 2,
+          },
+          '&:active': {
+            transform: 'translateY(0)',
+          },
+        }}
+      >
+        {item.label}
+      </Button>
+    );
   };
 
   return (
     <>
       <AppBar
-        position="static"
+        position="fixed"
         sx={{
-          background: 'rgba(255,255,255,0.3)',
-          backdropFilter: 'blur(16px)',
-          boxShadow: '0 8px 32px 0 rgba(31,38,135,0.37)',
-          border: '1px solid rgba(255,255,255,0.18)',
+          transform: showNavbar ? 'translateY(0)' : 'translateY(-100%)',
+          transition: 'transform 0.3s ease-in-out',
+          backgroundColor: mode === 'dark' ? 'black' : 'white',
+          color: mode === 'dark' ? 'white' : 'black',
+          backdropFilter: 'blur(8px)',
+          borderBottom: `1px solid ${mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+          boxShadow: mode === 'dark' ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.1)',
         }}
+        elevation={0}
       >
-        <Toolbar>
+        <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 2, md: 3 } }}>
           <Typography
             variant="h6"
-            component="div"
+            component="h1"
             sx={{
-              flexGrow: 1,
               fontWeight: 'bold',
-              color: '#1a1a1a',
               cursor: 'pointer',
+              color: mode === 'dark' ? 'white' : 'black',
+              '&:hover': {
+                color: mode === 'dark' ? 'black' : 'white',
+                backgroundColor: mode === 'dark' ? 'white' : 'black',
+                transition: 'all 0.3s ease',
+              },
             }}
             onClick={() => navigate('/')}
           >
             Event Feedback
           </Typography>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Button
-              color="inherit"
-              startIcon={<Home />}
-              onClick={() => navigate('/')}
+          {isMobile ? (
+            <IconButton
+              onClick={() => setDrawerOpen(true)}
               sx={{
-                color: '#1a1a1a',
+                color: mode === 'dark' ? 'white' : 'black',
                 '&:hover': {
-                  background: 'rgba(255,255,255,0.1)',
+                  backgroundColor: mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
                 },
               }}
             >
-              Home
-            </Button>
+              <MenuIcon />
+            </IconButton>
+          ) : (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                {navItems.map((item) => (
+                  <NavButton item={item} key={item.label} />
+                ))}
+              </Box>
 
-            {isAuthenticated && (
-              <Button
-                color="inherit"
-                startIcon={<Dashboard />}
-                onClick={() => navigate('/dashboard')}
+              <IconButton
+                onClick={toggleColorMode}
                 sx={{
-                  color: '#1a1a1a',
+                  color: mode === 'dark' ? 'white' : 'black',
+                  backgroundColor: 'transparent',
+                  borderRadius: 2,
                   '&:hover': {
-                    background: 'rgba(255,255,255,0.1)',
+                    backgroundColor: mode === 'dark' ? 'white' : 'black',
+                    color: mode === 'dark' ? 'black' : 'white',
+                    transform: 'scale(1.1)',
+                    transition: 'all 0.3s ease',
                   },
                 }}
               >
-                Dashboard
-              </Button>
-            )}
+                {mode === 'dark' ? <LightMode /> : <DarkMode />}
+              </IconButton>
 
-            {isAuthenticated ? (
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <IconButton
-                  size="large"
-                  aria-label="account of current user"
-                  aria-controls="menu-appbar"
-                  aria-haspopup="true"
-                  onClick={handleMenu}
-                  sx={{ color: '#1a1a1a' }}
-                >
-                  {user?.profilePic ? (
-                    <Avatar
-                      src={user.profilePic}
-                      alt={user.name}
-                      sx={{ width: 32, height: 32 }}
-                    />
-                  ) : (
-                    <AccountCircle />
-                  )}
-                </IconButton>
-                <Menu
-                  id="menu-appbar"
-                  anchorEl={anchorEl}
-                  anchorOrigin={{
-                    vertical: 'bottom',
-                    horizontal: 'right',
-                  }}
-                  keepMounted
-                  transformOrigin={{
-                    vertical: 'top',
-                    horizontal: 'right',
-                  }}
-                  open={Boolean(anchorEl)}
-                  onClose={handleClose}
-                  PaperProps={{
-                    sx: {
-                      background: 'rgba(255,255,255,0.9)',
-                      backdropFilter: 'blur(16px)',
-                      border: '1px solid rgba(255,255,255,0.18)',
-                      boxShadow: '0 8px 32px 0 rgba(31,38,135,0.37)',
-                    },
-                  }}
-                >
-                  <MenuItem onClick={handleProfileClick}>
-                    <Person sx={{ mr: 1 }} />
-                    Profile
-                  </MenuItem>
-                  <MenuItem onClick={handleLogout}>
-                    <Logout sx={{ mr: 1 }} />
-                    Logout
-                  </MenuItem>
-                </Menu>
-              </Box>
-            ) : (
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <Button
-                  variant="outlined"
-                  onClick={() => navigate('/login')}
-                  sx={{
-                    borderColor: 'rgba(255,255,255,0.3)',
-                    color: '#1a1a1a',
-                    '&:hover': {
-                      borderColor: 'rgba(255,255,255,0.5)',
-                      background: 'rgba(255,255,255,0.1)',
-                    },
-                  }}
-                >
-                  Login
-                </Button>
-                <Button
-                  variant="contained"
-                  onClick={() => navigate('/register')}
-                  sx={{
-                    background: 'rgba(255,255,255,0.2)',
-                    backdropFilter: 'blur(16px)',
-                    border: '1px solid rgba(255,255,255,0.18)',
-                    color: '#1a1a1a',
-                    '&:hover': {
-                      background: 'rgba(255,255,255,0.3)',
-                    },
-                  }}
-                >
-                  Sign Up
-                </Button>
-              </Box>
-            )}
-          </Box>
+              {isAuthenticated ? (
+                <Box>
+                  <IconButton
+                    onClick={handleMenu}
+                    sx={{
+                      p: 0,
+                      ml: 1,
+                      '&:hover': {
+                        transform: 'scale(1.05)',
+                        transition: 'transform 0.3s ease',
+                      },
+                    }}
+                  >
+                    {user?.profilePic ? (
+                      <Avatar src={user.profilePic} alt={user.name} />
+                    ) : (
+                      <Avatar sx={{
+                        bgcolor: mode === 'dark' ? 'white' : 'black',
+                        color: mode === 'dark' ? 'black' : 'white',
+                      }}>
+                        <AccountCircle />
+                      </Avatar>
+                    )}
+                  </IconButton>
+                  <Menu
+                    anchorEl={anchorEl}
+                    open={Boolean(anchorEl)}
+                    onClose={handleClose}
+                    slotProps={{
+                      paper: {
+                        sx: {
+                          mt: 2,
+                          backgroundColor: mode === 'dark' ? 'black' : 'white',
+                          color: mode === 'dark' ? 'white' : 'black',
+                          border: `1px solid ${mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+                          boxShadow: mode === 'dark' ? '0 4px 20px rgba(0,0,0,0.5)' : '0 4px 20px rgba(0,0,0,0.15)',
+                        }
+                      }
+                    }}
+                  >
+                    <Button
+                      onClick={handleProfileClick}
+                      fullWidth
+                      startIcon={<Person />}
+                      sx={{
+                        justifyContent: 'flex-start',
+                        px: 2,
+                        py: 1,
+                        color: mode === 'dark' ? 'white' : 'black',
+                        '&:hover': {
+                          backgroundColor: mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                        },
+                      }}
+                    >
+                      Profile
+                    </Button>
+                    <Button
+                      onClick={handleLogout}
+                      fullWidth
+                      startIcon={<Logout />}
+                      sx={{
+                        justifyContent: 'flex-start',
+                        px: 2,
+                        py: 1,
+                        color: mode === 'dark' ? 'white' : 'black',
+                        '&:hover': {
+                          backgroundColor: mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                        },
+                      }}
+                    >
+                      Logout
+                    </Button>
+                  </Menu>
+                </Box>
+              ) : (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Button
+                    onClick={() => navigate('/login')}
+                    variant="outlined"
+                    size="small"
+                    sx={{
+                      color: mode === 'dark' ? 'white' : 'black',
+                      borderColor: mode === 'dark' ? 'white' : 'black',
+                      '&:hover': {
+                        backgroundColor: mode === 'dark' ? 'white' : 'black',
+                        color: mode === 'dark' ? 'black' : 'white',
+                        borderColor: mode === 'dark' ? 'white' : 'black',
+                      },
+                    }}
+                  >
+                    Login
+                  </Button>
+                  <Button
+                    onClick={() => navigate('/register')}
+                    variant="contained"
+                    size="small"
+                    sx={{
+                      backgroundColor: mode === 'dark' ? 'white' : 'black',
+                      color: mode === 'dark' ? 'black' : 'white',
+                      '&:hover': {
+                        backgroundColor: mode === 'dark' ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)',
+                        transform: 'translateY(-1px)',
+                        boxShadow: 2,
+                      },
+                    }}
+                  >
+                    Sign Up
+                  </Button>
+                </Box>
+              )}
+            </Box>
+          )}
         </Toolbar>
       </AppBar>
+
+      {/* Mobile Drawer */}
+      <Drawer
+        anchor="right"
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        slotProps={{
+          paper: {
+            sx: {
+              backgroundColor: mode === 'dark' ? 'black' : 'white',
+              color: mode === 'dark' ? 'white' : 'black',
+              width: 256,
+              p: 2,
+            }
+          }
+        }}
+      >
+        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
+          Menu
+        </Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          {navItems.map((item) => (
+            <Button
+              key={item.label}
+              onClick={() => { navigate(item.path); setDrawerOpen(false); }}
+              startIcon={item.icon}
+              fullWidth
+              variant="text"
+              sx={{
+                justifyContent: 'flex-start',
+                fontWeight: location.pathname === item.path ? 'bold' : 'normal',
+                color: location.pathname === item.path
+                  ? mode === 'dark' ? 'black' : 'white'
+                  : mode === 'dark' ? 'white' : 'black',
+                backgroundColor: location.pathname === item.path
+                  ? mode === 'dark' ? 'white' : 'black'
+                  : 'transparent',
+                borderRadius: 2,
+                '&:hover': {
+                  backgroundColor: mode === 'dark' ? 'white' : 'black',
+                  color: mode === 'dark' ? 'black' : 'white',
+                },
+              }}
+            >
+              {item.label}
+            </Button>
+          ))}
+
+          <Button
+            onClick={toggleColorMode}
+            startIcon={mode === 'dark' ? <LightMode /> : <DarkMode />}
+            fullWidth
+            variant="text"
+            sx={{
+              justifyContent: 'flex-start',
+              mt: 1,
+              color: mode === 'dark' ? 'white' : 'black',
+              backgroundColor: 'transparent',
+              borderRadius: 2,
+              '&:hover': {
+                backgroundColor: mode === 'dark' ? 'white' : 'black',
+                color: mode === 'dark' ? 'black' : 'white',
+              },
+            }}
+          >
+            {mode === 'dark' ? 'Light Mode' : 'Dark Mode'}
+          </Button>
+
+          {isAuthenticated ? (
+            <>
+              <Button
+                onClick={() => { handleProfileClick(); setDrawerOpen(false); }}
+                startIcon={<Person />}
+                fullWidth
+                variant="text"
+                sx={{
+                  justifyContent: 'flex-start',
+                  color: mode === 'dark' ? 'white' : 'black',
+                  backgroundColor: 'transparent',
+                  borderRadius: 2,
+                  '&:hover': {
+                    backgroundColor: mode === 'dark' ? 'white' : 'black',
+                    color: mode === 'dark' ? 'black' : 'white',
+                  },
+                }}
+              >
+                Profile
+              </Button>
+              <Button
+                onClick={() => { handleLogout(); setDrawerOpen(false); }}
+                startIcon={<Logout />}
+                fullWidth
+                variant="text"
+                sx={{
+                  justifyContent: 'flex-start',
+                  color: mode === 'dark' ? 'white' : 'black',
+                  backgroundColor: 'transparent',
+                  borderRadius: 2,
+                  '&:hover': {
+                    backgroundColor: mode === 'dark' ? 'white' : 'black',
+                    color: mode === 'dark' ? 'black' : 'white',
+                  },
+                }}
+              >
+                Logout
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                onClick={() => { navigate('/login'); setDrawerOpen(false); }}
+                fullWidth
+                variant="outlined"
+                sx={{
+                  mt: 1,
+                  color: mode === 'dark' ? 'white' : 'black',
+                  borderColor: mode === 'dark' ? 'white' : 'black',
+                  '&:hover': {
+                    backgroundColor: mode === 'dark' ? 'white' : 'black',
+                    color: mode === 'dark' ? 'black' : 'white',
+                    borderColor: mode === 'dark' ? 'white' : 'black',
+                  },
+                }}
+              >
+                Login
+              </Button>
+              <Button
+                onClick={() => { navigate('/register'); setDrawerOpen(false); }}
+                fullWidth
+                variant="contained"
+                sx={{
+                  backgroundColor: mode === 'dark' ? 'white' : 'black',
+                  color: mode === 'dark' ? 'black' : 'white',
+                  '&:hover': {
+                    backgroundColor: mode === 'dark' ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)',
+                  },
+                }}
+              >
+                Sign Up
+              </Button>
+            </>
+          )}
+        </Box>
+      </Drawer>
 
       <ProfileModal
         open={profileModalOpen}
@@ -208,4 +460,4 @@ const Navbar = () => {
   );
 };
 
-export default Navbar; 
+export default Navbar;

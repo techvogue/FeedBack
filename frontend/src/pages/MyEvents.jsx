@@ -1,36 +1,39 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from "../api/axiosInstance";
 import {
+  Add as AddIcon,
+  ArrowBack as ArrowBackIcon,
+  Event as EventIcon,
+} from "@mui/icons-material";
+import {
+  Alert,
   Box,
-  Typography,
-  Grid,
-  Container,
   Button,
   CircularProgress,
-  Alert,
+  Container,
+  Grid,
   Paper,
+  Typography,
+  useTheme,
 } from "@mui/material";
-import {
-  Event as EventIcon,
-  ArrowBack as ArrowBackIcon,
-  Add as AddIcon,
-} from "@mui/icons-material";
-
+import { motion } from 'framer-motion';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from "../api/axiosInstance";
 import EventCard from '../components/EventCard';
 
 export default function MyEvents() {
   const navigate = useNavigate();
+  const theme = useTheme();
+  
+  console.log('📍 Current Page: My Events Page');
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  
   const fetchEvents = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
-      const response = await axios.get("/events"); 
+      const response = await axios.get("/events");
       setEvents(response.data);
     } catch (err) {
       setError("Failed to load events");
@@ -38,16 +41,16 @@ export default function MyEvents() {
     } finally {
       setLoading(false);
     }
-  }, []); 
+  }, []);
 
   useEffect(() => {
     fetchEvents();
-  }, [fetchEvents]); 
+  }, [fetchEvents]);
 
   const handleDeleteEvent = async (eventId) => {
     if (window.confirm('Are you sure you want to delete this event?')) {
       try {
-        await axios.delete(`/events/${eventId}`); 
+        await axios.delete(`/events/${eventId}`);
         setEvents(prevEvents => prevEvents.filter(event => event.id !== eventId));
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to delete event.');
@@ -61,99 +64,154 @@ export default function MyEvents() {
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-          <CircularProgress size={60} />
-        </Box>
-      </Container>
+      <Box sx={{
+        minHeight: '100vh',
+        backgroundColor: theme.palette.background.default,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}>
+        <CircularProgress size={60} />
+      </Box>
     );
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Paper
-        sx={{
-          p: 4,
-          background: 'rgba(255,255,255,0.3)',
-          backdropFilter: 'blur(16px)',
-          borderRadius: 3,
-          border: '1px solid rgba(255,255,255,0.18)',
-          boxShadow: '0 8px 32px 0 rgba(31,38,135,0.37)',
-        }}
-      >
-       
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Button
-              startIcon={<ArrowBackIcon />}
-              onClick={() => navigate("/dashboard")}
-              sx={{ mr: 2 }}
-            >
-              Back to Dashboard
-            </Button>
-           
-          </Box>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => navigate("/add-event")}
-            sx={{ px: 3 }}
+    <Box sx={{
+      backgroundColor: theme.palette.background.default,
+      minHeight: '100vh',
+      py: 6,
+      px: 2
+    }}>
+      <Container maxWidth="lg">
+        <Paper
+          elevation={0}
+          sx={{
+            p: { xs: 2, sm: 4 },
+            backgroundColor: theme.palette.background.paper,
+            borderRadius: 3,
+            boxShadow: theme.palette.mode === 'dark'
+              ? '0 6px 20px rgba(0,0,0,0.3)'
+              : '0 6px 20px rgba(0,0,0,0.08)',
+            border: `1px solid ${theme.palette.divider}`,
+            transition: 'all 0.3s ease-in-out',
+          }}
+        >
+          {/* Header */}
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: { xs: 'column', sm: 'row' },
+              justifyContent: 'space-between',
+              alignItems: { xs: 'flex-start', sm: 'center' },
+              gap: 2,
+              mb: 4,
+            }}
           >
-            Add Event
-          </Button>
-        </Box>
-
-        {error && (
-          <Alert severity="error" sx={{ mb: 3 }}>
-            {error}
-          </Alert>
-        )}
-
-
-        {events.length === 0 ? (
-          <Box sx={{ textAlign: 'center', py: 8 }}>
-            <EventIcon sx={{ fontSize: 80, color: '#1976d2', mb: 3, opacity: 0.7 }} />
-            <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 'bold', mb: 2 }}>
-              No Events Yet
+            <Typography variant="h4" fontWeight="bold" color={theme.palette.text.primary}>
+              My Events
             </Typography>
-            <Typography variant="body1" color="textSecondary" sx={{ mb: 4, maxWidth: 500, mx: 'auto' }}>
-              You haven't created any events yet. Start by creating your first event to collect feedback from attendees.
-            </Typography>
-            <Button
-              variant="contained"
-              size="large"
-              startIcon={<AddIcon />}
-              onClick={() => navigate("/add-event")}
-              sx={{
-                background: 'rgba(255,255,255,0.2)',
-                backdropFilter: 'blur(16px)',
-                border: '1px solid rgba(255,255,255,0.18)',
-                color: '#1a1a1a',
-                px: 4,
-                py: 1.5,
-                fontSize: '1.1rem',
-                '&:hover': {
-                  background: 'rgba(255,255,255,0.3)',
-                },
-              }}
-            >
-              Create Your First Event
-            </Button>
+
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <Button
+                startIcon={<ArrowBackIcon />}
+                onClick={() => navigate("/dashboard")}
+                variant="outlined"
+                sx={{
+                  color: theme.palette.text.primary,
+                  borderColor: theme.palette.divider,
+                  '&:hover': {
+                    backgroundColor: theme.palette.text.primary,
+                    color: theme.palette.background.paper,
+                    borderColor: theme.palette.text.primary,
+                  },
+                }}
+              >
+                Back to Dashboard
+              </Button>
+
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => navigate("/add-event")}
+                sx={{
+                  backgroundColor: theme.palette.primary.main,
+                  color: theme.palette.primary.contrastText,
+                  '&:hover': {
+                    backgroundColor: theme.palette.primary.dark,
+                  },
+                }}
+              >
+                Add Event
+              </Button>
+            </Box>
           </Box>
-        ) : (
-          <Grid container spacing={3}>
-            {events.map((event) => (
-              <Grid item xs={12} md={6} lg={6} key={event.id}>
-                <EventCard
-                  event={event}
-                  onDelete={handleDeleteEvent}
-                  onEdit={handleEditEvent}
-                />
-              </Grid>
-            ))}
-          </Grid>
-        )}
-      </Paper>
-    </Container>
+
+          {/* Error Alert */}
+          {error && (
+            <Alert severity="error" sx={{ mb: 3 }}>
+              {error}
+            </Alert>
+          )}
+
+          {/* Event Cards or Empty State */}
+          {events.length === 0 ? (
+            <Box sx={{ textAlign: 'center', py: 8 }}>
+              <EventIcon sx={{
+                fontSize: 80,
+                color: theme.palette.primary.main,
+                opacity: 0.7,
+                mb: 2
+              }} />
+              <Typography variant="h5" fontWeight="bold" color={theme.palette.text.primary} gutterBottom>
+                No Events Created
+              </Typography>
+              <Typography variant="body1" color={theme.palette.text.secondary} sx={{
+                maxWidth: 500,
+                mx: 'auto',
+                mb: 4
+              }}>
+                You haven't created any events yet. Click below to create your first event and start collecting feedback.
+              </Typography>
+              <Button
+                variant="contained"
+                size="large"
+                startIcon={<AddIcon />}
+                onClick={() => navigate("/add-event")}
+                sx={{
+                  px: 4,
+                  py: 1.5,
+                  fontSize: '1.1rem',
+                  backgroundColor: theme.palette.primary.main,
+                  '&:hover': {
+                    backgroundColor: theme.palette.primary.dark,
+                  },
+                }}
+              >
+                Create Your First Event
+              </Button>
+            </Box>
+          ) : (
+            <Grid container spacing={3}>
+              {events.map((event, index) => (
+                <Grid item xs={12} sm={6} md={4} key={event.id}>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1, duration: 0.4 }}
+                  >
+                    <EventCard
+                      event={event}
+                      onDelete={handleDeleteEvent}
+                      onEdit={handleEditEvent}
+                    />
+                  </motion.div>
+                </Grid>
+              ))}
+            </Grid>
+          )}
+        </Paper>
+      </Container>
+    </Box>
   );
 }

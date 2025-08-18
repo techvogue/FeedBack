@@ -21,7 +21,7 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-// Response interceptor to handle token expiration
+// Response interceptor to handle token expiration and other errors
 axiosInstance.interceptors.response.use(
   (response) => {
     return response;
@@ -32,6 +32,11 @@ axiosInstance.interceptors.response.use(
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login';
+    } else if (error.response?.status === 404 && error.config?.url?.includes('/feedback/forms/')) {
+      // 404 for feedback forms is expected behavior - not a real error
+      // We'll still reject the promise so the calling code can handle it,
+      // but we won't log it as an error in the console
+      console.debug('Feedback form not found (expected for new events):', error.config.url);
     }
     return Promise.reject(error);
   }

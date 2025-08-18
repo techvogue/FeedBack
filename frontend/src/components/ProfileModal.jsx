@@ -13,6 +13,7 @@ import {
   Modal,
   TextField,
   Typography,
+  useTheme,
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -20,6 +21,7 @@ import { clearError, getProfile, updateProfilePicture } from '../redux/slices/au
 
 const ProfileModal = ({ open, onClose }) => {
   const dispatch = useDispatch();
+  const theme = useTheme();
   const { user, loading, error } = useSelector((state) => state.auth);
 
   const [selectedFile, setSelectedFile] = useState(null);
@@ -90,10 +92,14 @@ const ProfileModal = ({ open, onClose }) => {
     >
       <Box
         sx={{
-          background: 'rgba(255,255,255,0.9)',
+          background: theme.palette.mode === 'dark'
+            ? 'rgba(30,30,30,0.95)'
+            : 'rgba(255,255,255,0.95)',
           backdropFilter: 'blur(16px)',
-          border: '1px solid rgba(255,255,255,0.18)',
-          boxShadow: '0 8px 32px 0 rgba(31,38,135,0.37)',
+          border: `1px solid ${theme.palette.divider}`,
+          boxShadow: theme.palette.mode === 'dark'
+            ? '0 8px 32px 0 rgba(0,0,0,0.6)'
+            : '0 8px 32px 0 rgba(31,38,135,0.37)',
           borderRadius: 3,
           p: 4,
           width: '100%',
@@ -109,7 +115,12 @@ const ProfileModal = ({ open, onClose }) => {
             position: 'absolute',
             right: 8,
             top: 8,
-            color: '#1a1a1a',
+            color: theme.palette.text.primary,
+            '&:hover': {
+              backgroundColor: theme.palette.mode === 'dark'
+                ? 'rgba(255,255,255,0.1)'
+                : 'rgba(0,0,0,0.04)'
+            }
           }}
         >
           <Close />
@@ -121,7 +132,11 @@ const ProfileModal = ({ open, onClose }) => {
           component="h2"
           align="center"
           gutterBottom
-          sx={{ fontWeight: 'bold', color: '#1a1a1a', mb: 3 }}
+          sx={{
+            fontWeight: 'bold',
+            color: theme.palette.text.primary,
+            mb: 3
+          }}
         >
           Profile
         </Typography>
@@ -147,8 +162,10 @@ const ProfileModal = ({ open, onClose }) => {
                   sx={{
                     width: 120,
                     height: 120,
-                    border: '3px solid rgba(255,255,255,0.3)',
-                    boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
+                    border: `3px solid ${theme.palette.divider}`,
+                    boxShadow: theme.palette.mode === 'dark'
+                      ? '0 4px 16px rgba(0,0,0,0.3)'
+                      : '0 4px 16px rgba(0,0,0,0.1)',
                   }}
                 />
                 <input
@@ -165,10 +182,13 @@ const ProfileModal = ({ open, onClose }) => {
                       position: 'absolute',
                       bottom: 0,
                       right: 0,
-                      background: 'rgba(255,255,255,0.9)',
-                      border: '2px solid rgba(255,255,255,0.3)',
+                      background: theme.palette.background.paper,
+                      border: `2px solid ${theme.palette.divider}`,
+                      color: theme.palette.text.primary,
                       '&:hover': {
-                        background: 'rgba(255,255,255,1)',
+                        background: theme.palette.mode === 'dark'
+                          ? 'rgba(255,255,255,0.1)'
+                          : 'rgba(0,0,0,0.04)',
                       },
                     }}
                   >
@@ -185,13 +205,14 @@ const ProfileModal = ({ open, onClose }) => {
                     disabled={uploading}
                     startIcon={uploading ? <CircularProgress size={20} /> : <Save />}
                     sx={{
-                      background: 'rgba(255,255,255,0.2)',
-                      backdropFilter: 'blur(16px)',
-                      border: '1px solid rgba(255,255,255,0.18)',
-                      color: '#1a1a1a',
+                      backgroundColor: theme.palette.primary.main,
+                      color: theme.palette.primary.contrastText,
                       '&:hover': {
-                        background: 'rgba(255,255,255,0.3)',
+                        backgroundColor: theme.palette.primary.dark,
                       },
+                      '&:disabled': {
+                        backgroundColor: theme.palette.action.disabledBackground,
+                      }
                     }}
                   >
                     {uploading ? 'Uploading...' : 'Save Picture'}
@@ -208,7 +229,23 @@ const ProfileModal = ({ open, onClose }) => {
                 value={user?.name || ''}
                 margin="normal"
                 disabled
-                sx={{ mb: 2 }}
+                sx={{
+                  mb: 2,
+                  '& .MuiInputLabel-root': {
+                    color: theme.palette.text.secondary,
+                  },
+                  '& .MuiInputBase-input': {
+                    color: theme.palette.text.primary,
+                  },
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: theme.palette.divider,
+                    },
+                    '&:hover fieldset': {
+                      borderColor: theme.palette.text.secondary,
+                    },
+                  },
+                }}
               />
 
               <TextField
@@ -217,7 +254,23 @@ const ProfileModal = ({ open, onClose }) => {
                 value={user?.email || ''}
                 margin="normal"
                 disabled
-                sx={{ mb: 2 }}
+                sx={{
+                  mb: 2,
+                  '& .MuiInputLabel-root': {
+                    color: theme.palette.text.secondary,
+                  },
+                  '& .MuiInputBase-input': {
+                    color: theme.palette.text.primary,
+                  },
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: theme.palette.divider,
+                    },
+                    '&:hover fieldset': {
+                      borderColor: theme.palette.text.secondary,
+                    },
+                  },
+                }}
               />
 
               <TextField
@@ -226,6 +279,22 @@ const ProfileModal = ({ open, onClose }) => {
                 value={user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : ''}
                 margin="normal"
                 disabled
+                sx={{
+                  '& .MuiInputLabel-root': {
+                    color: theme.palette.text.secondary,
+                  },
+                  '& .MuiInputBase-input': {
+                    color: theme.palette.text.primary,
+                  },
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: theme.palette.divider,
+                    },
+                    '&:hover fieldset': {
+                      borderColor: theme.palette.text.secondary,
+                    },
+                  },
+                }}
               />
             </Box>
           </>

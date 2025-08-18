@@ -1,24 +1,37 @@
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, useTheme } from "@mui/material";
 import {
   ArcElement, BarElement, CategoryScale,
   Chart as ChartJS, Legend,
   LinearScale,
+  LineElement,
+  PointElement,
   Title, Tooltip
 } from "chart.js";
 import { Bar, Pie } from "react-chartjs-2";
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend, PointElement, LineElement);
 
 export default function QuestionAnalyticsChart({ question, answers }) {
+  const theme = useTheme();
+
   // One key log: always see what data/metadata you're working with
   console.log("[AnalyticsChart] Question type:", question.type, "for question:", question.title || question.label || question.name);
+  console.log("[AnalyticsChart] Question object:", question);
+  console.log("[AnalyticsChart] Answers:", answers);
+  console.log("[AnalyticsChart] Answers length:", answers.length);
 
-  const type = question.type || "text";
+  // Check for number type using inputType or chartType property
+  let type = question.type || "text";
+  if (question.inputType === 'number' || question.chartType === 'number') {
+    type = 'number';
+  }
+  console.log("[AnalyticsChart] Final type:", type);
 
   // Only chart for recognized chartable types
   if (["text", "comment", "email", "file"].includes(type)) {
+    console.log("[AnalyticsChart] Question type not suitable for charts:", type);
     return (
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+      <Typography variant="body2" color={theme.palette.text.secondary} sx={{ mb: 2 }}>
         This question type is not suitable for chart analytics.
       </Typography>
     );
@@ -69,17 +82,48 @@ export default function QuestionAnalyticsChart({ question, answers }) {
       if (counts.hasOwnProperty(key)) counts[key]++;
     });
   } else if (type === "number") {
-    // Show frequency bar chart for distinct numbers
+    console.log("[AnalyticsChart] Processing number type question");
+    console.log("[AnalyticsChart] Raw answers:", answers);
+
+    // Convert all answers to numbers and filter out invalid values
+    const numericAnswers = answers
+      .map(a => {
+        const num = parseFloat(a);
+        return isNaN(num) ? null : num;
+      })
+      .filter(num => num !== null);
+
+    console.log("[AnalyticsChart] Numeric answers:", numericAnswers);
+
+    if (numericAnswers.length === 0) {
+      return (
+        <Typography variant="body2" color={theme.palette.text.secondary} sx={{ mb: 2 }}>
+          No valid numeric data found for chart analytics.
+        </Typography>
+      );
+    }
+
+    // Create frequency distribution
     counts = {};
-    answers.forEach(a => {
-      const key = String(a).trim();
+    numericAnswers.forEach(num => {
+      const key = String(num);
       counts[key] = (counts[key] || 0) + 1;
     });
-    choices = Object.keys(counts);
+
+    console.log("[AnalyticsChart] Frequency counts:", counts);
+
+    // Sort choices numerically
+    choices = Object.keys(counts).sort((a, b) => {
+      const numA = parseFloat(a);
+      const numB = parseFloat(b);
+      return numA - numB;
+    });
+
+    console.log("[AnalyticsChart] Sorted choices:", choices);
   } else {
     // Any other type fallback: do not chart
     return (
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+      <Typography variant="body2" color={theme.palette.text.secondary} sx={{ mb: 2 }}>
         This question type is not suitable for chart analytics.
       </Typography>
     );
@@ -87,14 +131,36 @@ export default function QuestionAnalyticsChart({ question, answers }) {
 
   const finalLabels = choices;
   const finalData = choices.map(opt => counts[opt] ?? 0);
+  const totalResponses = finalData.reduce((sum, val) => sum + val, 0);
+
+  console.log("[AnalyticsChart] Final labels:", finalLabels);
+  console.log("[AnalyticsChart] Final data:", finalData);
+  console.log("[AnalyticsChart] Total responses:", totalResponses);
 
   if (finalData.every(val => val === 0)) {
+    console.log("[AnalyticsChart] No data to chart");
     return (
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+      <Typography variant="body2" color={theme.palette.text.secondary} sx={{ mb: 2 }}>
         Not enough diverse data for chart analytics.
       </Typography>
     );
   }
+
+  // Calculate percentages
+  const percentages = finalData.map(count =>
+    totalResponses > 0 ? ((count / totalResponses) * 100).toFixed(1) : '0.0'
+  );
+
+  // Theme-aware colors for chart
+  const chartColors = theme.palette.mode === 'dark'
+    ? [
+      "#7C3AED", "#4F46E5", "#38BDF8", "#34D399", "#F59E42", "#EF4444", "#E5E7EB",
+      "#FDE047", "#A78BFA", "#F472B6", "#6EE7B7", "#9CA3AF"
+    ]
+    : [
+      "#3B82F6", "#8B5CF6", "#06B6D4", "#10B981", "#F59E0B", "#EF4444", "#6B7280",
+      "#EAB308", "#A855F7", "#EC4899", "#14B8A6", "#9CA3AF"
+    ];
 
   const chartData = {
     labels: finalLabels,
@@ -102,12 +168,13 @@ export default function QuestionAnalyticsChart({ question, answers }) {
       {
         label: "Responses",
         data: finalData,
-        backgroundColor: [
-          "#7C3AED", "#4F46E5", "#38BDF8", "#34D399", "#F59E42", "#EF4444", "#E5E7EB",
-          "#FDE047", "#A78BFA", "#F472B6", "#6EE7B7", "#9CA3AF"
-        ],
-        borderColor: "#ffffff",
-        borderWidth: 2,
+        backgroundColor: type === "number" ? '#7C3AED' : chartColors,
+        borderColor: type === "number" ? '#5B21B6' : (theme.palette.mode === 'dark' ? '#374151' : '#ffffff'),
+        borderWidth: type === "number" ? 2 : 2,
+        borderRadius: type === "number" ? 4 : 0,
+        borderSkipped: false,
+        barThickness: type === "number" ? 35 : 'flex',
+        maxBarThickness: type === "number" ? 40 : 50,
       },
     ],
   };
@@ -115,41 +182,163 @@ export default function QuestionAnalyticsChart({ question, answers }) {
   // Chart type auto-selection
   let ChartComponent = Bar;
   let chartHeight = 260;
+  let chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: true,
+        position: "bottom",
+        labels: {
+          color: '#FFFFFF',
+          font: { size: 12 },
+          usePointStyle: true,
+          padding: 15,
+          generateLabels: (chart) => {
+            const data = chart.data;
+            if (data.labels && data.datasets && data.datasets[0]) {
+              return data.labels.map((label, index) => {
+                const value = data.datasets[0].data[index];
+                const percentage = percentages[index];
+                return {
+                  text: `${label} (${value} - ${percentage}%)`,
+                  fillStyle: type === "number" ? '#7C3AED' : chartColors[index % chartColors.length],
+                  strokeStyle: type === "number" ? '#7C3AED' : chartColors[index % chartColors.length],
+                  lineWidth: 0,
+                  hidden: false,
+                  index: index,
+                  color: '#ffffff'
+                };
+              });
+            }
+            return [];
+          }
+        },
+      },
+      tooltip: {
+        backgroundColor: theme.palette.mode === 'dark' ? '#1F2937' : '#FFFFFF',
+        titleColor: theme.palette.mode === 'dark' ? '#F9FAFB' : '#111827',
+        bodyColor: theme.palette.mode === 'dark' ? '#F9FAFB' : '#374151',
+        borderColor: theme.palette.divider,
+        borderWidth: 1,
+        padding: 10,
+        cornerRadius: 8,
+        displayColors: true,
+        titleFont: { size: 14, weight: 'bold' },
+        bodyFont: { size: 13 },
+        callbacks: {
+          label: (context) => {
+            const label = context.label || '';
+            const value = context.parsed.y || context.parsed;
+            const percentage = percentages[context.dataIndex];
+            return `${label}: ${value} responses (${percentage}%)`;
+          }
+        }
+      },
+      title: {
+        display: true,
+        text: question.title || question.label || "Response Analytics",
+        font: { size: 16, weight: 'bold' },
+        color: theme.palette.text.primary,
+        padding: { top: 10, bottom: 10 }
+      },
+    },
+    layout: { padding: 12 },
+    // Global color configuration
+    color: theme.palette.text.primary,
+  };
+
   if (type === "boolean" || type === "radiogroup" || type === "dropdown") {
     ChartComponent = Pie;
     chartHeight = 260;
-  } else if (type === "checkbox" || type === "number" || type === "rating") {
+  } else if (type === "checkbox" || type === "rating") {
     ChartComponent = Bar;
     chartHeight = 290;
+    // Add scales for Bar charts
+    chartOptions.scales = {
+      x: {
+        ticks: {
+          color: theme.palette.text.primary,
+          font: { size: 11 }
+        },
+        grid: {
+          color: theme.palette.divider,
+          drawBorder: false
+        }
+      },
+      y: {
+        ticks: {
+          color: theme.palette.text.primary,
+          font: { size: 11 },
+          callback: function (value, index, values) {
+            return Math.round(value);
+          },
+          stepSize: 1,
+          min: 0,
+          max: function (context) {
+            const maxValue = Math.max(...context.chart.data.datasets[0].data);
+            if (maxValue <= 5) return 5;
+            if (maxValue <= 10) return 10;
+            if (maxValue <= 15) return 15;
+            if (maxValue <= 20) return 20;
+            return Math.ceil(maxValue / 5) * 5;
+          }
+        },
+        grid: {
+          color: theme.palette.divider,
+          drawBorder: false
+        }
+      }
+    };
+  } else if (type === "number") {
+    ChartComponent = Bar;
+    chartHeight = 290;
+    // Add scales for Bar charts (number type)
+    chartOptions.scales = {
+      x: {
+        ticks: {
+          color: theme.palette.text.primary,
+          font: { size: 11 }
+        },
+        grid: {
+          color: theme.palette.divider,
+          drawBorder: false
+        }
+      },
+      y: {
+        ticks: {
+          color: theme.palette.text.primary,
+          font: { size: 11 },
+          callback: function (value, index, values) {
+            return Math.round(value);
+          },
+          stepSize: 1,
+          min: 0,
+          max: function (context) {
+            const maxValue = Math.max(...context.chart.data.datasets[0].data);
+            if (maxValue <= 5) return 5;
+            if (maxValue <= 10) return 10;
+            if (maxValue <= 15) return 15;
+            if (maxValue <= 20) return 20;
+            return Math.ceil(maxValue / 5) * 5;
+          }
+        },
+        grid: {
+          color: theme.palette.divider,
+          drawBorder: false
+        }
+      }
+    };
   }
+
+  console.log("[AnalyticsChart] Selected chart type:", ChartComponent.name);
+  console.log("[AnalyticsChart] Chart height:", chartHeight);
 
   return (
     <Box sx={{ maxWidth: 450, height: chartHeight, mx: "auto", my: 3 }}>
       <ChartComponent
         data={chartData}
-        options={{
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              display: true,
-              position: "bottom",
-              labels: { color: "#333", font: { size: 12 } },
-            },
-            tooltip: {
-              backgroundColor: "#111827",
-              titleColor: "#FACC15",
-              bodyColor: "#E5E7EB",
-              padding: 10,
-            },
-            title: {
-              display: true,
-              text: question.title || question.label || "Response Analytics",
-              font: { size: 16 },
-            },
-          },
-          layout: { padding: 12 },
-        }}
+        options={chartOptions}
       />
     </Box>
   );

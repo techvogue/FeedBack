@@ -5,6 +5,7 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const passport = require('passport');
 const session = require('express-session');
+const multer = require('multer');
 
 // Import configurations
 require('./config/passport-local')(passport);
@@ -16,6 +17,7 @@ const authRoutes = require('./routes/auth');
 const dashboardRoutes = require('./routes/dashboard');
 const feedbackRoutes = require('./routes/feedback');
 const aiRoutes = require('./routes/aiRoutes');
+const ticketRoutes = require('./routes/tickets');
 
 const app = express();
 
@@ -26,8 +28,8 @@ app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
   credentials: true,
 }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '5mb' }));
+app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 
 // Session middleware for OAuth redirect handling
 app.use(session({
@@ -49,6 +51,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/events', require('./routes/event'));
 app.use('/api/feedback', feedbackRoutes);
+app.use('/api/tickets', ticketRoutes);
 
 app.use('/api', aiRoutes);
 
@@ -59,8 +62,58 @@ app.get('/api/health', (req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: 'Something went wrong!' });
+  console.error('>>> [app.js] Error middleware caught:', err);
+
+  // Handle multer errors specifically
+  if (err instanceof multer.MulterError) {
+    console.error('>>> [app.js] Multer error:', err.code);
+
+    switch (err.code) {
+      case 'LIMIT_FILE_SIZE':
+        return res.status(413).json({
+          message: 'File too large',
+          error: 'File size exceeds the maximum allowed size of 5MB'
+        });
+      case 'LIMIT_FILE_COUNT':
+        return res.status(400).json({
+          message: 'Too many files',
+          error: 'You can only upload one file at a time'
+        });
+      case 'LIMIT_UNEXPECTED_FILE':
+        return res.status(400).json({
+          message: 'Unexpected file field',
+          error: 'Invalid file upload request'
+        });
+      default:
+        return res.status(400).json({
+          message: 'File upload error',
+          error: err.message
+        });
+    }
+  }
+
+  // Handle file filter errors
+  if (err.message && err.message.includes('File type not supported')) {
+    return res.status(400).json({
+      message: 'Invalid file type',
+      error: err.message
+    });
+  }
+
+  // Handle file format errors
+  if (err.message && err.message.includes('File format not supported')) {
+    return res.status(400).json({
+      message: 'Invalid file format',
+      error: err.message
+    });
+  }
+
+  // Handle other errors
+  console.error('>>> [app.js] Unhandled error:', err.stack);
+  res.status(500).json({
+    message: 'Something went wrong!',
+    error: process.env.NODE_ENV === 'development' ? err.message : 'An unexpected error occurred'
+  });
 });
 
 // 404 handler

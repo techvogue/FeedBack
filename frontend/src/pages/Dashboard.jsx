@@ -1,27 +1,15 @@
-// src/pages/Dashboard.jsx
-import React, { useState, useEffect } from 'react';
+import { Add as AddIcon, Event as EventIcon } from '@mui/icons-material';
+import { Alert, Box, Button, CircularProgress, Container, Paper, Typography, useTheme } from '@mui/material';
+import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import {
-  Container,
-  Typography,
-  Box,
-  Grid,
-  Paper,
-  Button,
-  CircularProgress,
-  Alert,
-} from '@mui/material';
-import { 
-  Add as AddIcon, 
-  Event as EventIcon,
-  Dashboard as DashboardIcon 
-} from '@mui/icons-material';
-
 import axiosInstance from '../api/axiosInstance';
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const theme = useTheme();
+
+  console.log('📍 Current Page: Dashboard Page');
   const { user } = useSelector((state) => state.auth);
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -46,142 +34,159 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 8 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-          <CircularProgress size={60} />
-        </Box>
-      </Container>
+      <Box sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '100vh',
+        backgroundColor: theme.palette.background.default
+      }}>
+        <CircularProgress size={60} />
+      </Box>
     );
   }
 
   if (error) {
     return (
-      <Container maxWidth="lg" sx={{ py: 8 }}>
-        <Alert severity="error" sx={{ mb: 3 }}>
+      <Box sx={{
+        p: 3,
+        backgroundColor: theme.palette.background.default,
+        minHeight: '100vh'
+      }}>
+        <Alert severity="error" sx={{ mb: 2 }}>
           {error}
         </Alert>
-      </Container>
+      </Box>
     );
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 8 }}>
-      {/* Welcome Section */}
-      <Box
-        sx={{
-          mb: 6,
-          p: 4,
-          background: 'rgba(255,255,255,0.3)',
-          backdropFilter: 'blur(16px)',
+    <Box sx={{
+      minHeight: '100vh',
+      backgroundColor: theme.palette.background.default,
+      px: { xs: 2, sm: 3 },
+      py: { xs: 3, sm: 5 }
+    }}>
+      <Container maxWidth="lg">
+        {/* Welcome Section */}
+        <Paper sx={{
+          mb: 4,
+          p: { xs: 2, sm: 3 },
+          backgroundColor: theme.palette.background.paper,
           borderRadius: 3,
-          border: '1px solid rgba(255,255,255,0.18)',
-          boxShadow: '0 8px 32px 0 rgba(31,38,135,0.37)',
-        }}
-      >
-        <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 'bold', color: '#1a1a1a' }}>
-          Welcome back, {user?.name || 'User'}! 👋
-        </Typography>
-        <Typography variant="h6" color="textSecondary">
-          Manage your events and collect feedback from attendees.
-        </Typography>
-      </Box>
+          border: `1px solid ${theme.palette.divider}`,
+          boxShadow: theme.palette.mode === 'dark'
+            ? '0 4px 20px rgba(0,0,0,0.3)'
+            : '0 4px 20px rgba(0,0,0,0.08)'
+        }}>
+          <Typography variant="h3" component="h1" sx={{
+            fontWeight: 'bold',
+            mb: 1,
+            color: theme.palette.text.primary
+          }}>
+            Welcome back, {user?.name || 'User'}! 👋
+          </Typography>
+          <Typography variant="body1" sx={{
+            color: theme.palette.text.secondary
+          }}>
+            Manage your events and collect feedback from attendees.
+          </Typography>
+        </Paper>
 
-      {/* Action Buttons */}
-      <Grid container spacing={4} sx={{ mb: 6 }}>
-        <Grid item xs={12} md={6}>
-          <Paper
-            sx={{
-              p: 4,
-              background: 'rgba(255,255,255,0.3)',
-              backdropFilter: 'blur(16px)',
-              borderRadius: 3,
-              border: '1px solid rgba(255,255,255,0.18)',
-              boxShadow: '0 8px 32px 0 rgba(31,38,135,0.37)',
-              textAlign: 'center',
-              transition: 'transform 0.2s ease-in-out',
-              '&:hover': {
-                transform: 'translateY(-4px)',
-                boxShadow: '0 12px 40px 0 rgba(31,38,135,0.5)',
-              }
-            }}
-          >
-           
-            <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 'bold' }}>
+        {/* Action Cards - Responsive Layout */}
+        <Box sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: 3,
+          maxWidth: 'lg',
+          mx: 'auto'
+        }}>
+          {/* Create Event */}
+          <Paper sx={{
+            width: '100%',
+            backgroundColor: theme.palette.background.paper,
+            border: `1px solid ${theme.palette.divider}`,
+            borderRadius: 3,
+            p: 3,
+            textAlign: 'center',
+            boxShadow: theme.palette.mode === 'dark'
+              ? '0 4px 20px rgba(0,0,0,0.3)'
+              : '0 4px 20px rgba(0,0,0,0.08)',
+            transition: 'transform 0.3s ease',
+            '&:hover': {
+              transform: 'translateY(-4px)',
+              boxShadow: theme.palette.mode === 'dark'
+                ? '0 6px 24px rgba(0,0,0,0.4)'
+                : '0 6px 24px rgba(0,0,0,0.12)'
+            }
+          }}>
+            <Typography variant="h6" sx={{
+              fontWeight: 'bold',
+              mb: 2,
+              color: theme.palette.text.primary
+            }}>
               Create New Event
             </Typography>
-          
             <Button
+              onClick={() => navigate('/add-event')}
               variant="contained"
-              size="large"
-             
-              onClick={() => navigate("/add-event")}
+              startIcon={<AddIcon />}
               sx={{
-                background: 'rgba(255,255,255,0.2)',
-                backdropFilter: 'blur(16px)',
-                border: '1px solid rgba(255,255,255,0.18)',
-                color: '#1a1a1a',
-                px: 3,
-                py: 1,
-                fontSize: '1.1rem',
+                backgroundColor: theme.palette.mode === 'dark' ? '#7C3AED' : '#8B5CF6',
                 '&:hover': {
-                  background: 'rgba(255,255,255,0.3)',
-                },
+                  backgroundColor: theme.palette.mode === 'dark' ? '#6D28D9' : '#7C3AED'
+                }
               }}
             >
-              <AddIcon sx={{ fontSize: 30, color: '#1976d2', mr: 1}} /> Add Event
+              Add Event
             </Button>
           </Paper>
-        </Grid>
 
-        <Grid item xs={12} md={6}>
-          <Paper
-            sx={{
-              p: 4,
-              background: 'rgba(255,255,255,0.3)',
-              backdropFilter: 'blur(16px)',
-              borderRadius: 3,
-              border: '1px solid rgba(255,255,255,0.18)',
-              boxShadow: '0 8px 32px 0 rgba(31,38,135,0.37)',
-              textAlign: 'center',
-              transition: 'transform 0.2s ease-in-out',
-              '&:hover': {
-                transform: 'translateY(-4px)',
-                boxShadow: '0 12px 40px 0 rgba(31,38,135,0.5)',
-              }
-            }}
-          >
-            
-            <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 'bold' }}>
+          {/* View Events */}
+          <Paper sx={{
+            width: '100%',
+            backgroundColor: theme.palette.background.paper,
+            border: `1px solid ${theme.palette.divider}`,
+            borderRadius: 3,
+            p: 3,
+            textAlign: 'center',
+            boxShadow: theme.palette.mode === 'dark'
+              ? '0 4px 20px rgba(0,0,0,0.3)'
+              : '0 4px 20px rgba(0,0,0,0.08)',
+            transition: 'transform 0.3s ease',
+            '&:hover': {
+              transform: 'translateY(-4px)',
+              boxShadow: theme.palette.mode === 'dark'
+                ? '0 6px 24px rgba(0,0,0,0.4)'
+                : '0 6px 24px rgba(0,0,0,0.12)'
+            }
+          }}>
+            <Typography variant="h6" sx={{
+              fontWeight: 'bold',
+              mb: 2,
+              color: theme.palette.text.primary
+            }}>
               View Event List
             </Typography>
-         
             <Button
+              onClick={() => navigate('/my-events')}
               variant="contained"
-              size="large"
-              startIcon={<EventIcon sx={{ fontSize: 60, color: '#2e7d32', mb: 0 }} />}
-              onClick={() => navigate("/my-events")}
+              startIcon={<EventIcon />}
               sx={{
-                background: 'rgba(255,255,255,0.2)',
-                backdropFilter: 'blur(16px)',
-                border: '1px solid rgba(255,255,255,0.18)',
-                color: '#1a1a1a',
-                px: 3,
-                py: 1,
-                fontSize: '1.1rem',
+                backgroundColor: theme.palette.mode === 'dark' ? '#0D9488' : '#14B8A6',
                 '&:hover': {
-                  background: 'rgba(255,255,255,0.3)',
-                },
+                  backgroundColor: theme.palette.mode === 'dark' ? '#0F766E' : '#0D9488'
+                }
               }}
             >
               View Events
             </Button>
           </Paper>
-        </Grid>
-      </Grid>
-
-    
-   
-    </Container>
+        </Box>
+      </Container>
+    </Box>
   );
 };
 

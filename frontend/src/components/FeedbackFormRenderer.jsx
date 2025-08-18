@@ -1,19 +1,32 @@
-import {
-  Alert,
-  Box,
-  Button,
-  CircularProgress,
-  Paper,
-  Typography
-} from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Model } from 'survey-core';
 import 'survey-core/survey-core.min.css';
 import { Survey } from 'survey-react-ui';
 import axios from '../api/axiosInstance';
 
+// Constants
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const ALLOWED_FILE_TYPES = [
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'text/plain',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/vnd.ms-powerpoint',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+];
+
 const FeedbackFormRenderer = ({ eventId, onComplete }) => {
+  const { user } = useSelector((state) => state.auth);
+
+  // State management
   const [survey, setSurvey] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -22,22 +35,80 @@ const FeedbackFormRenderer = ({ eventId, onComplete }) => {
   const [eventData, setEventData] = useState(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [alreadySubmitted, setAlreadySubmitted] = useState(false);
-  const { user } = useSelector((state) => state.auth);
+  const [uploadError, setUploadError] = useState('');
+  const [showUploadError, setShowUploadError] = useState(false);
 
-  useEffect(() => {
-    const loadForm = async () => {
+  // File validation function
+  const validateFile = useCallback((file) => {
+    if (file.size > MAX_FILE_SIZE) {
+      return {
+        valid: false,
+        error: `File size must be less than 5MB. Current size: ${(file.size / (1024 * 1024)).toFixed(2)}MB`
+      };
+    }
+
+    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+      return {
+        valid: false,
+        error: `File type not supported. Allowed types: Images (JPG, PNG, WebP, GIF), Documents (PDF, DOC, DOCX, TXT), Spreadsheets (XLS, XLSX), Presentations (PPT, PPTX)`
+      };
+    }
+
+    return { valid: true };
+  }, []);
+
+  // Show upload error message
+  const showError = useCallback((message) => {
+    setUploadError(message);
+    setShowUploadError(true);
+    setTimeout(() => {
+      setShowUploadError(false);
+      setUploadError('');
+    }, 5000);
+  }, []);
+
+  // Load form data
+  const loadForm = useCallback(async () => {
+    if (!eventId) return;
+
+    try {
+      setLoading(true);
+      setError('');
+
+      // Load event details
       try {
-        const response = await axios.get(`/feedback/forms/${eventId}`);
-        const { schema, event } = response.data;
+        const eventResponse = await axios.get(`/feedback/event/${eventId}`);
+        setEventData(eventResponse.data);
+      } catch (eventErr) {
+        console.log('Could not load event details:', eventErr);
+      }
 
-        if (!schema) {
-          setError('No feedback form found for this event');
-          return;
-        }
+      // Load feedback form
+      const response = await axios.get(`/feedback/forms/${eventId}`);
+      const { schema, event } = response.data;
 
+      if (!schema) {
+        setError('No feedback form found for this event');
+        return;
+      }
+
+      if (event) {
         setEventData(event);
+      }
 
-        // Check if user has already submitted feedback
+      if (!schema.pages || !Array.isArray(schema.pages) || schema.pages.length === 0) {
+        setError('Invalid survey schema format');
+        return;
+      }
+
+      const firstPage = schema.pages[0];
+      if (!firstPage.elements || !Array.isArray(firstPage.elements) || firstPage.elements.length === 0) {
+        setError('Survey contains no questions');
+        return;
+      }
+
+      // Check submission status for authenticated users
+      if (user) {
         try {
           const checkResponse = await axios.get(`/feedback/responses/${eventId}/check`);
           if (checkResponse.data.hasSubmitted) {
@@ -46,349 +117,389 @@ const FeedbackFormRenderer = ({ eventId, onComplete }) => {
             return;
           }
         } catch (err) {
-          // If check fails, continue with form loading
           console.log('Could not check submission status:', err);
         }
-
-        // Configure survey for file uploads
-        const surveyModel = new Model(schema);
-
-        // Custom styling for better readability
-        surveyModel.css = {
-          root: "sv_main",
-          header: "sv_header",
-          body: "sv_body",
-          footer: "sv_footer",
-          navigation: {
-            root: "sv_nav",
-            prev: "sv_nav_prev",
-            next: "sv_nav_next",
-            complete: "sv_nav_complete"
-          },
-          question: {
-            root: "sv_q",
-            title: "sv_q_title",
-            description: "sv_q_description",
-            content: "sv_q_content",
-            required: "sv_q_required"
-          },
-          text: {
-            root: "sv_q_text",
-            input: "sv_q_text_input"
-          },
-          comment: {
-            root: "sv_q_comment",
-            input: "sv_q_comment_input"
-          },
-          radiogroup: {
-            root: "sv_q_radio",
-            item: "sv_q_radio_item",
-            label: "sv_q_radio_label"
-          },
-          checkbox: {
-            root: "sv_q_checkbox",
-            item: "sv_q_checkbox_item",
-            label: "sv_q_checkbox_label"
-          },
-          rating: {
-            root: "sv_q_rating",
-            item: "sv_q_rating_item"
-          },
-          boolean: {
-            root: "sv_q_boolean",
-            item: "sv_q_boolean_item"
-          },
-          file: {
-            root: "sv_q_file",
-            input: "sv_q_file_input"
-          },
-          email: {
-            root: "sv_q_email",
-            input: "sv_q_email_input"
-          },
-          number: {
-            root: "sv_q_number",
-            input: "sv_q_number_input"
-          }
-        };
-
-        surveyModel.onUploadFiles.add(async (sender, options) => {
-          const files = options.files;
-          const urls = [];
-
-          for (let i = 0; i < files.length; i++) {
-            const formData = new FormData();
-            formData.append('file', files[i]);
-
-            try {
-              const uploadResponse = await axios.post('/feedback/upload', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-              });
-              urls.push(uploadResponse.data.fileUrl);
-            } catch (err) {
-              console.error('File upload failed:', err);
-            }
-          }
-
-          options.callback('success', urls);
-        });
-
-        surveyModel.onComplete.add(async (sender, options) => {
-          setSubmitting(true);
-          try {
-            await axios.post(`/feedback/responses/${eventId}`, {
-              answers: sender.data
-            });
-            setHasSubmitted(true);
-            setSuccess('Thank you for your feedback! Your response has been submitted successfully.');
-            if (onComplete) onComplete();
-          } catch (err) {
-            setError('Failed to submit feedback. Please try again.');
-          } finally {
-            setSubmitting(false);
-          }
-        });
-
-        setSurvey(surveyModel);
-      } catch (err) {
-        setError('Failed to load feedback form');
-      } finally {
-        setLoading(false);
       }
-    };
 
+      // Create survey model
+      const surveyModel = new Model(schema);
+
+      if (!surveyModel || !surveyModel.pages || surveyModel.pages.length === 0) {
+        setError('Failed to create survey model');
+        return;
+      }
+
+      // Configure survey model
+      surveyModel.showQuestionNumbers = false;
+      surveyModel.showProgressBar = false;
+      surveyModel.allowCompleteSurveyAutomatic = false;
+      surveyModel.autoGrowComment = true;
+      surveyModel.focusFirstQuestionAutomatic = false;
+      surveyModel.showNavigationButtons = true;
+      surveyModel.showTitle = false;
+      surveyModel.showPageTitles = false;
+      surveyModel.showCompletedPage = false;
+      surveyModel.showPreviewBeforeComplete = false;
+      surveyModel.showStartPage = false;
+      surveyModel.showEndPage = false;
+
+      const firstSurveyPage = surveyModel.pages[0];
+      if (!firstSurveyPage.elements || firstSurveyPage.elements.length === 0) {
+        setError('Survey contains no visible elements');
+        return;
+      }
+
+      // Handle file uploads
+      surveyModel.onUploadFiles.add(async (sender, options) => {
+        const files = options.files;
+        const urls = [];
+        const errors = [];
+
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          const validation = validateFile(file);
+
+          if (!validation.valid) {
+            errors.push(`File "${file.name}": ${validation.error}`);
+            continue;
+          }
+
+          const formData = new FormData();
+          formData.append('file', file);
+
+          try {
+            const uploadResponse = await axios.post('/feedback/upload', formData, {
+              headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            urls.push(uploadResponse.data.fileUrl);
+          } catch (err) {
+            console.error('File upload failed:', err);
+            let errorMessage = 'File upload failed';
+
+            if (err.response?.status === 413) {
+              errorMessage = `File "${file.name}" is too large. Maximum size is 5MB.`;
+            } else if (err.response?.status === 400) {
+              errorMessage = err.response.data.message || `File "${file.name}" format not supported`;
+            } else if (err.response?.status === 500) {
+              errorMessage = `Server error while uploading "${file.name}". Please try again.`;
+            } else if (err.code === 'NETWORK_ERROR') {
+              errorMessage = `Network error while uploading "${file.name}". Please check your connection.`;
+            }
+
+            errors.push(errorMessage);
+          }
+        }
+
+        if (errors.length > 0) {
+          showError(errors.join('\n'));
+        }
+
+        if (urls.length > 0) {
+          options.callback('success', urls);
+        } else if (errors.length > 0) {
+          options.callback('error', errors.join('\n'));
+        } else {
+          options.callback('error', 'No files were uploaded successfully');
+        }
+      });
+
+      // Handle form completion
+      surveyModel.onComplete.add(async (sender, options) => {
+        setSubmitting(true);
+        try {
+          if (!sender.data || Object.keys(sender.data).length === 0) {
+            throw new Error('No survey data to submit');
+          }
+
+          const response = await axios.post(`/feedback/responses/${eventId}`, {
+            answers: sender.data
+          });
+
+          setHasSubmitted(true);
+          setSuccess('Thank you for your feedback! Your response has been submitted successfully.');
+          if (onComplete) onComplete();
+        } catch (err) {
+          console.error('Submission error:', err);
+          setError(err.response?.data?.message || 'Failed to submit feedback. Please try again.');
+        } finally {
+          setSubmitting(false);
+        }
+      });
+
+      setSurvey(surveyModel);
+    } catch (err) {
+      console.error('Load form error:', err);
+
+      if (err.response?.status === 404) {
+        const errorData = err.response.data;
+        if (errorData.event && !errorData.hasFeedbackForm) {
+          setError('This event exists but does not have a feedback form yet. The organizer may still be setting it up.');
+          setEventData(errorData.event);
+        } else {
+          setError('No feedback form found for this event');
+        }
+      } else if (err.response?.status === 500) {
+        setError('Server error while loading the feedback form. Please try again later.');
+      } else if (err.code === 'ERR_NETWORK') {
+        setError('Network error: Cannot connect to the server. Please check if the backend is running.');
+      } else if (err.message?.includes('timeout')) {
+        setError('Request timeout: The server is taking too long to respond.');
+      } else {
+        setError(`Failed to load feedback form: ${err.message || 'Unknown error'}`);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [eventId, onComplete, user, validateFile, showError]);
+
+  useEffect(() => {
     loadForm();
-  }, [eventId, onComplete]);
+  }, [loadForm]);
 
+  // Loading state
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-        <CircularProgress sx={{ color: '#3498db' }} />
-      </Box>
+      <div className="flex justify-center items-center min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-black dark:border-white mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading feedback form...</p>
+        </div>
+      </div>
     );
   }
 
+  // Error state
   if (error) {
     return (
-      <Alert severity="error" sx={{
-        m: 2,
-        backgroundColor: '#fdf2f2',
-        color: '#c53030',
-        '& .MuiAlert-icon': { color: '#c53030' }
-      }}>
-        {error}
-      </Alert>
-    );
-  }
+      <div className="max-w-2xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 text-center">
+          Feedback Form Not Available
+        </h2>
+        <p className="text-gray-600 dark:text-gray-300 mb-6 text-center">
+          {error}
+        </p>
 
-  if (success) {
-    return (
-      <Alert severity="success" sx={{
-        m: 2,
-        backgroundColor: '#f0fff4',
-        color: '#2f855a',
-        '& .MuiAlert-icon': { color: '#2f855a' }
-      }}>
-        {success}
-      </Alert>
-    );
-  }
+        {eventData && error.includes('does not have a feedback form yet') && (
+          <div className="text-center mb-6">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              Event: <span className="font-semibold">{eventData.title}</span>
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              {eventData.description}
+            </p>
+            <div className="mb-4">
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                This event doesn't have a feedback form yet.
+              </p>
+              {user && eventData.ownerId === user.id ? (
+                <button
+                  onClick={async () => {
+                    try {
+                      const response = await axios.post(`/feedback/forms/${eventId}/default`);
+                      if (response.data.success) {
+                        window.location.reload();
+                      }
+                    } catch (err) {
+                      console.error('Failed to create default form:', err);
+                      setError('Failed to create default feedback form. Please try again.');
+                    }
+                  }}
+                  className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors text-sm"
+                >
+                  Create Default Feedback Form
+                </button>
+              ) : (
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Only the event organizer can create a feedback form. Please contact the event organizer to set up feedback collection.
+                </p>
+              )}
+            </div>
+          </div>
+        )}
 
-  if (alreadySubmitted) {
-    return (
-      <Paper sx={{
-        p: 4,
-        background: 'rgba(255,255,255,0.98)',
-        borderRadius: 3,
-        boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-        textAlign: 'center'
-      }}>
-        <Typography variant="h5" sx={{
-          mb: 2,
-          color: '#2c3e50',
-          fontWeight: 'bold'
-        }}>
-          Already Submitted
-        </Typography>
-        <Typography variant="body1" sx={{
-          color: '#7f8c8d',
-          mb: 3
-        }}>
-          You have already submitted feedback for this event. Thank you for your participation!
-        </Typography>
-        <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
-          <Button
-            variant="outlined"
+        <div className="flex gap-4 justify-center flex-wrap">
+          <button
             onClick={() => window.history.back()}
-            sx={{
-              borderColor: '#3498db',
-              color: '#3498db',
-              '&:hover': { borderColor: '#2980b9', backgroundColor: 'rgba(52, 152, 219, 0.1)' }
-            }}
+            className="px-6 py-2 border border-black dark:border-white text-black dark:text-white rounded-lg hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
           >
             Go Back
-          </Button>
-          <Button
-            variant="contained"
+          </button>
+          <button
             onClick={() => window.location.href = '/'}
-            sx={{
-              backgroundColor: '#27ae60',
-              '&:hover': { backgroundColor: '#229954' }
-            }}
+            className="px-6 py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
+          >
+            Go to Home
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Success state
+  if (success) {
+    return (
+      <div className="max-w-2xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 text-center">
+          Thank You!
+        </h2>
+        <p className="text-gray-600 dark:text-gray-300 mb-6 text-center">
+          {success}
+        </p>
+        <div className="flex gap-4 justify-center flex-wrap">
+          <button
+            onClick={() => window.history.back()}
+            className="px-6 py-2 border border-black dark:border-white text-black dark:text-white rounded-lg hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
+          >
+            Go Back
+          </button>
+          <button
+            onClick={() => window.location.href = '/'}
+            className="px-6 py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
+          >
+            Go to Home
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Already submitted state
+  if (alreadySubmitted) {
+    return (
+      <div className="max-w-2xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 text-center">
+          Already Submitted
+        </h2>
+        <p className="text-gray-600 dark:text-gray-300 mb-6 text-center">
+          You have already submitted feedback for this event. Thank you for your participation!
+        </p>
+        <div className="flex gap-4 justify-center">
+          <button
+            onClick={() => window.history.back()}
+            className="px-6 py-2 border border-black dark:border-white text-black dark:text-white rounded-lg hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
+          >
+            Go Back
+          </button>
+          <button
+            onClick={() => window.location.href = '/dashboard'}
+            className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
           >
             Go to Dashboard
-          </Button>
-        </Box>
-      </Paper>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Main form render
+  if (!survey) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-black dark:border-white mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Preparing feedback form...</p>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Paper sx={{
-      p: 3,
-      background: 'rgba(255,255,255,0.98)',
-      borderRadius: 3,
-      boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
-    }}>
+    <div className="max-w-4xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
       {eventData && (
-        <Box sx={{ mb: 3, textAlign: 'center' }}>
-          <Typography variant="h4" sx={{
-            fontWeight: 'bold',
-            mb: 1,
-            color: '#2c3e50'
-          }}>
+        <div className="mb-6 text-center">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             {eventData.title}
-          </Typography>
-          <Typography variant="body1" sx={{
-            color: '#7f8c8d',
-            fontSize: '1.1rem'
-          }}>
+          </h1>
+          <p className="text-lg text-gray-600 dark:text-gray-300">
             {eventData.description}
-          </Typography>
-        </Box>
+          </p>
+        </div>
       )}
 
       {submitting && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-          <CircularProgress sx={{ color: '#3498db' }} />
-        </Box>
+        <div className="flex justify-center mb-4">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-black dark:border-white"></div>
+        </div>
       )}
 
-      {survey && (
-        <Box sx={{
-          maxWidth: 800,
-          mx: 'auto',
-          '& .sv_main': {
-            fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-            color: '#2c3e50'
-          },
-          '& .sv_q_title': {
-            fontSize: '1.1rem',
-            fontWeight: 600,
-            color: '#34495e',
-            marginBottom: '8px'
-          },
-          '& .sv_q_description': {
-            color: '#7f8c8d',
-            fontSize: '0.9rem',
-            marginBottom: '12px'
-          },
-          '& .sv_q_required': {
-            color: '#e74c3c',
-            fontWeight: 600
-          },
-          '& .sv_q_text_input, & .sv_q_comment_input, & .sv_q_email_input, & .sv_q_number_input': {
-            border: '2px solid #ecf0f1',
-            borderRadius: '8px',
-            padding: '12px',
-            fontSize: '1rem',
-            '&:focus': {
-              borderColor: '#3498db',
-              outline: 'none',
-              boxShadow: '0 0 0 3px rgba(52, 152, 219, 0.1)'
-            }
-          },
-          '& .sv_q_radio_item, & .sv_q_checkbox_item': {
-            marginBottom: '8px',
-            padding: '8px',
-            borderRadius: '6px',
-            '&:hover': {
-              backgroundColor: '#f8f9fa'
-            }
-          },
-          '& .sv_q_radio_label, & .sv_q_checkbox_label': {
-            fontSize: '1rem',
-            color: '#2c3e50',
-            marginLeft: '8px'
-          },
-          '& .sv_q_rating_item': {
-            fontSize: '1.5rem',
-            color: '#f39c12',
-            margin: '0 4px',
-            cursor: 'pointer',
-            '&:hover': {
-              color: '#e67e22'
-            }
-          },
-          '& .sv_q_boolean_item': {
-            padding: '12px',
-            border: '2px solid #ecf0f1',
-            borderRadius: '8px',
-            margin: '4px 0',
-            cursor: 'pointer',
-            '&:hover': {
-              borderColor: '#3498db',
-              backgroundColor: '#f8f9fa'
-            }
-          },
-          '& .sv_q_file_input': {
-            border: '2px dashed #bdc3c7',
-            borderRadius: '8px',
-            padding: '20px',
-            textAlign: 'center',
-            cursor: 'pointer',
-            '&:hover': {
-              borderColor: '#3498db',
-              backgroundColor: '#f8f9fa'
-            }
-          },
-          '& .sv_nav': {
-            marginTop: '24px',
-            paddingTop: '16px',
-            borderTop: '2px solid #ecf0f1'
-          },
-          '& .sv_nav_next, & .sv_nav_complete': {
-            backgroundColor: '#3498db',
-            color: 'white',
-            border: 'none',
-            padding: '12px 24px',
-            borderRadius: '6px',
-            fontSize: '1rem',
-            fontWeight: 600,
-            cursor: 'pointer',
-            '&:hover': {
-              backgroundColor: '#2980b9'
-            }
-          },
-          '& .sv_nav_prev': {
-            backgroundColor: 'transparent',
-            color: '#7f8c8d',
-            border: '2px solid #bdc3c7',
-            padding: '12px 24px',
-            borderRadius: '6px',
-            fontSize: '1rem',
-            fontWeight: 600,
-            cursor: 'pointer',
-            '&:hover': {
-              borderColor: '#3498db',
-              color: '#3498db'
-            }
-          }
-        }}>
-          <Survey model={survey} />
-        </Box>
+      {showUploadError && (
+        <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+          <p className="text-red-800 dark:text-red-200 text-sm whitespace-pre-line">{uploadError}</p>
+        </div>
       )}
-    </Paper>
+
+      <div className="max-w-4xl mx-auto">
+        <style>
+          {`
+            .survey-container .sv-progress,
+            .survey-container .sv-progress-bar,
+            .survey-container .sv-page__counter,
+            .survey-container .sv-progress-buttons,
+            .survey-container .sv-progress-buttons__container,
+            .survey-container .sv-progress-buttons__list,
+            .survey-container .sv-progress-buttons__page-title,
+            .survey-container .sv-progress-buttons__button,
+            .survey-container .sv-progress-buttons__connector,
+            .survey-container .sv-progress-buttons__image-button-left,
+            .survey-container .sv-progress-buttons__image-button-right {
+              display: none !important;
+            }
+            
+            .survey-container .sv-root-modern {
+              background: transparent !important;
+            }
+            
+            .survey-container .sv-container-modern {
+              background: transparent !important;
+              box-shadow: none !important;
+              border: none !important;
+            }
+            
+            .survey-container .sv-btn {
+              background-color: #000000 !important;
+              color: #ffffff !important;
+              border: 2px solid #000000 !important;
+              border-radius: 8px !important;
+              padding: 12px 24px !important;
+              font-size: 16px !important;
+              font-weight: 600 !important;
+              cursor: pointer !important;
+              transition: all 0.2s ease !important;
+            }
+            
+            .survey-container .sv-btn:hover {
+              background-color: #333333 !important;
+              transform: translateY(-2px) !important;
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+            }
+            
+            .survey-container .sv-btn:active {
+              transform: translateY(0) !important;
+            }
+          `}
+        </style>
+        <Survey
+          model={survey}
+          onError={(error) => {
+            console.error('Survey rendering error:', error);
+          }}
+          style={{
+            '--sjs-font-family': 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+            '--sjs-font-size': '16px',
+            '--sjs-font-weight': '400',
+            '--sjs-line-height': '1.5',
+            '--sjs-background-color': 'transparent',
+            '--sjs-foreground-color': '#000000',
+            '--sjs-border-color': '#e5e7eb',
+            '--sjs-border-radius': '8px',
+            '--sjs-shadow': 'none',
+            '--sjs-margin': '0',
+            '--sjs-padding': '0',
+          }}
+          className="survey-container"
+        />
+      </div>
+    </div>
   );
 };
 

@@ -19,12 +19,11 @@ router.get(
   eventController.getMyEvents
 );
 
-// Event details by ID
-router.get(
-  '/:id',
-  passport.authenticate('jwt', { session: false }),
-  eventController.getEventById
-);
+// Get all public events (no authentication required)
+router.get('/public', eventController.getPublicEvents);
+
+// Event details by ID (public for feedback forms)
+router.get('/:id', eventController.getEventById);
 
 // Update event by ID
 router.patch(

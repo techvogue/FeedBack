@@ -9,6 +9,7 @@ import {
   Paper,
   TextField,
   Typography,
+  useTheme,
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -18,7 +19,10 @@ import { clearError, login } from '../redux/slices/authSlice';
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  
+  console.log('📍 Current Page: Login Page');
   const location = useLocation();
+  const theme = useTheme();
 
   const { loading, error, isAuthenticated } = useSelector((state) => state.auth);
   const [formData, setFormData] = useState({
@@ -73,33 +77,41 @@ const Login = () => {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ py: 8 }}>
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          minHeight: '80vh',
-          justifyContent: 'center',
-        }}
-      >
-        <Paper
+    <Box sx={{
+      minHeight: '100vh',
+      backgroundColor: theme.palette.background.default,
+      py: 4,
+      px: 2
+    }}>
+      <Container maxWidth="sm">
+        <Box
           sx={{
-            p: 6,
-            width: '100%',
-            background: 'rgba(255,255,255,0.9)',
-            backdropFilter: 'blur(16px)',
-            border: '1px solid rgba(255,255,255,0.18)',
-            boxShadow: '0 8px 32px 0 rgba(31,38,135,0.37)',
-            borderRadius: 3,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            minHeight: '80vh',
+            justifyContent: 'center',
           }}
         >
+          <Paper
+            sx={{
+              p: 6,
+              width: '100%',
+              background: theme.palette.background.paper,
+              backdropFilter: 'blur(16px)',
+              border: `1px solid ${theme.palette.divider}`,
+              boxShadow: theme.palette.mode === 'dark'
+                ? '0 8px 32px rgba(0,0,0,0.3)'
+                : '0 8px 32px rgba(0,0,0,0.1)',
+              borderRadius: 3,
+            }}
+          >
           <Typography
             variant="h3"
             component="h1"
             align="center"
             gutterBottom
-            sx={{ fontWeight: 'bold', color: '#1a1a1a', mb: 4 }}
+            sx={{ fontWeight: 'bold', color: theme.palette.text.primary, mb: 4 }}
           >
             Welcome Back
           </Typography>
@@ -120,7 +132,17 @@ const Login = () => {
               onChange={handleInputChange}
               margin="normal"
               required
-              sx={{ mb: 3 }}
+              sx={{ 
+                mb: 3,
+                '& .MuiOutlinedInput-root': {
+                  backgroundColor: theme.palette.background.paper,
+                  '&:hover': {
+                    backgroundColor: theme.palette.mode === 'dark'
+                      ? 'rgba(255,255,255,0.08)'
+                      : 'rgba(0,0,0,0.04)',
+                  },
+                },
+              }}
             />
 
             <TextField
@@ -132,7 +154,17 @@ const Login = () => {
               onChange={handleInputChange}
               margin="normal"
               required
-              sx={{ mb: 4 }}
+              sx={{ 
+                mb: 4,
+                '& .MuiOutlinedInput-root': {
+                  backgroundColor: theme.palette.background.paper,
+                  '&:hover': {
+                    backgroundColor: theme.palette.mode === 'dark'
+                      ? 'rgba(255,255,255,0.08)'
+                      : 'rgba(0,0,0,0.04)',
+                  },
+                },
+              }}
             />
 
             <Button
@@ -143,17 +175,17 @@ const Login = () => {
               sx={{
                 mb: 3,
                 py: 1.5,
-                background: 'rgba(255,255,255,0.2)',
-                backdropFilter: 'blur(16px)',
-                border: '1px solid rgba(255,255,255,0.18)',
-                color: '#1a1a1a',
+                backgroundColor: theme.palette.primary.main,
+                color: theme.palette.primary.contrastText,
                 fontSize: '1.1rem',
+                cursor: 'pointer',
                 '&:hover': {
-                  background: 'rgba(255,255,255,0.3)',
+                  backgroundColor: theme.palette.primary.dark,
                 },
                 '&:disabled': {
-                  background: 'rgba(255,255,255,0.1)',
-                  color: 'rgba(0,0,0,0.3)',
+                  backgroundColor: theme.palette.action.disabledBackground,
+                  color: theme.palette.action.disabled,
+                  cursor: 'not-allowed',
                 },
               }}
             >
@@ -166,7 +198,7 @@ const Login = () => {
           </form>
 
           <Divider sx={{ my: 3 }}>
-            <Typography variant="body2" color="textSecondary">
+            <Typography variant="body2" color={theme.palette.text.secondary}>
               OR
             </Typography>
           </Divider>
@@ -179,12 +211,15 @@ const Login = () => {
             sx={{
               mb: 4,
               py: 1.5,
-              borderColor: 'rgba(255,255,255,0.3)',
-              color: '#1a1a1a',
+              borderColor: theme.palette.divider,
+              color: theme.palette.text.primary,
               fontSize: '1.1rem',
+              cursor: 'pointer',
               '&:hover': {
-                borderColor: 'rgba(255,255,255,0.5)',
-                background: 'rgba(255,255,255,0.1)',
+                borderColor: theme.palette.text.primary,
+                backgroundColor: theme.palette.mode === 'dark'
+                  ? 'rgba(255,255,255,0.08)'
+                  : 'rgba(0,0,0,0.04)',
               },
             }}
           >
@@ -192,14 +227,15 @@ const Login = () => {
           </Button>
 
           <Box sx={{ textAlign: 'center' }}>
-            <Typography variant="body1" color="textSecondary">
+            <Typography variant="body1" color={theme.palette.text.secondary}>
               Don't have an account?{' '}
               <Link
                 to="/register"
                 style={{
-                  color: '#1976d2',
+                  color: theme.palette.primary.main,
                   textDecoration: 'none',
                   fontWeight: 'bold',
+                  cursor: 'pointer',
                 }}
               >
                 Sign up here
@@ -209,6 +245,7 @@ const Login = () => {
         </Paper>
       </Box>
     </Container>
+    </Box>
   );
 };
 

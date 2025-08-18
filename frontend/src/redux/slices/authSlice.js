@@ -1,5 +1,5 @@
 
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import axiosInstance from '../../api/axiosInstance';
 
 // Async thunks
@@ -8,7 +8,7 @@ export const register = createAsyncThunk(
   async (userData, { rejectWithValue }) => {
     try {
       let response;
-      
+
       // Check if userData is FormData (has profile picture)
       if (userData instanceof FormData) {
         response = await axiosInstance.post('/auth/register', userData, {
@@ -19,7 +19,7 @@ export const register = createAsyncThunk(
       } else {
         response = await axiosInstance.post('/auth/register', userData);
       }
-      
+
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Registration failed');
@@ -57,7 +57,7 @@ export const updateProfilePicture = createAsyncThunk(
     try {
       const formData = new FormData();
       formData.append('profilePicture', file);
-      
+
       const response = await axiosInstance.post('/auth/profile-picture', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',

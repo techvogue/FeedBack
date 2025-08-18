@@ -5,11 +5,27 @@ const feedbackController = require('../controllers/feedbackController');
 
 const router = express.Router();
 
+// Health check (public)
+router.get('/health', feedbackController.healthCheck);
+
 // Create or update feedback form (protected)
 router.post(
   '/forms/:eventId',
   passport.authenticate('jwt', { session: false }),
   feedbackController.createOrUpdateFeedbackForm
+);
+
+// Create default feedback form (protected)
+router.post(
+  '/forms/:eventId/default',
+  passport.authenticate('jwt', { session: false }),
+  feedbackController.createDefaultFeedbackForm
+);
+
+// Get event details for feedback form (public)
+router.get(
+  '/event/:eventId',
+  feedbackController.getEventForFeedback
 );
 
 // Get feedback form (public)
@@ -25,10 +41,17 @@ router.get(
   feedbackController.checkFeedbackSubmission
 );
 
-// Submit feedback response (protected)
+// Submit feedback response (optional authentication - supports both authenticated and anonymous)
 router.post(
   '/responses/:eventId',
-  passport.authenticate('jwt', { session: false }),
+  (req, res, next) => {
+    // Try to authenticate, but don't fail if no token provided
+    passport.authenticate('jwt', { session: false }, (err, user, info) => {
+      if (err) return next(err);
+      req.user = user; // Will be undefined if no valid token
+      next();
+    })(req, res, next);
+  },
   feedbackController.submitFeedbackResponse
 );
 

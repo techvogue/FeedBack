@@ -1,6 +1,7 @@
-import axios from './axiosInstance'; // your configured axios instance
+// AI API endpoints - now handled directly in components with axiosInstance
+// This file is kept for potential future AI-related API calls
 
-export const fetchAISummary = async (eventId) => {
-  const res = await axios.get(`/ai-feedback-summary/${eventId}`);
-  return res.data.summary;
+export const AI_ENDPOINTS = {
+  SUMMARY: '/ai-summary',
+  HEALTH: '/ai-health',
 };

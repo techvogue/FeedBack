@@ -20,12 +20,12 @@ exports.Prisma = Prisma
 exports.$Enums = {}
 
 /**
- * Prisma Client JS version: 6.12.0
- * Query Engine version: 8047c96bbd92db98a2abc7c9323ce77c02c89dbc
+ * Prisma Client JS version: 6.14.0
+ * Query Engine version: 717184b7b35ea05dfa71a3236b7af656013e1e49
  */
 Prisma.prismaVersion = {
-  client: "6.12.0",
-  engine: "8047c96bbd92db98a2abc7c9323ce77c02c89dbc"
+  client: "6.14.0",
+  engine: "717184b7b35ea05dfa71a3236b7af656013e1e49"
 }
 
 Prisma.PrismaClientKnownRequestError = () => {
@@ -155,6 +155,20 @@ exports.Prisma.FeedbackResponseScalarFieldEnum = {
   submittedAt: 'submittedAt'
 };
 
+exports.Prisma.TicketScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  userId: 'userId',
+  ticketNumber: 'ticketNumber',
+  attendeeName: 'attendeeName',
+  attendeeEmail: 'attendeeEmail',
+  ticketPrice: 'ticketPrice',
+  stripePaymentIntentId: 'stripePaymentIntentId',
+  stripeSessionId: 'stripeSessionId',
+  status: 'status',
+  purchasedAt: 'purchasedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -179,13 +193,19 @@ exports.Prisma.JsonNullValueFilter = {
   JsonNull: Prisma.JsonNull,
   AnyNull: Prisma.AnyNull
 };
-
+exports.TicketStatus = exports.$Enums.TicketStatus = {
+  PENDING: 'PENDING',
+  CONFIRMED: 'CONFIRMED',
+  CANCELLED: 'CANCELLED',
+  REFUNDED: 'REFUNDED'
+};
 
 exports.Prisma.ModelName = {
   User: 'User',
   Event: 'Event',
   FeedbackForm: 'FeedbackForm',
-  FeedbackResponse: 'FeedbackResponse'
+  FeedbackResponse: 'FeedbackResponse',
+  Ticket: 'Ticket'
 };
 
 /**

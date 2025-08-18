@@ -1,11 +1,9 @@
 import {
   ArrowBack as ArrowBackIcon,
-  Delete as DeleteIcon,
+  Assessment as AssessmentIcon,
   ExpandMore as ExpandMoreIcon,
   HelpOutline as HelpOutlineIcon,
-  Person as PersonIcon,
-  Schedule as ScheduleIcon,
-  Assessment as AssessmentIcon
+  Person as PersonIcon
 } from '@mui/icons-material';
 import {
   Accordion,
@@ -19,15 +17,15 @@ import {
   Paper,
   Tab,
   Tabs,
-  Typography
+  Typography,
+  useTheme
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import axios from '../api/axiosInstance';
-import QuestionAnalytics from '../components/QuestionAnalyticsChart';
 import AIFeedbackSummary from '../components/AIFeedbackSummary';
+import QuestionAnalytics from '../components/QuestionAnalyticsChart';
 
 
 const formatDate = dateString =>
@@ -72,19 +70,52 @@ const getQuestionNumber = (schema, qName) => {
 };
 
 
-const renderAnswer = answer => {
+const renderAnswer = (answer, theme) => {
+  // Handle file uploads - check if it's a string URL or an object with URL
+  let fileUrl = null;
+  let fileName = null;
+
   if (typeof answer === 'string' && answer.startsWith('http')) {
-    const fileName = decodeURIComponent(answer.split('/').pop());
+    fileUrl = answer;
+    fileName = decodeURIComponent(answer.split('/').pop());
+  } else if (typeof answer === 'object' && answer !== null) {
+    // Handle case where file URL is stored as an object
+    if (answer.fileUrl || answer.url) {
+      fileUrl = answer.fileUrl || answer.url;
+      fileName = answer.fileName || answer.name || decodeURIComponent(fileUrl.split('/').pop());
+    } else if (answer.toString && answer.toString().startsWith('http')) {
+      fileUrl = answer.toString();
+      fileName = decodeURIComponent(fileUrl.split('/').pop());
+    }
+  }
+
+  if (fileUrl) {
     return (
       <Box>
-        <Typography variant="body2" sx={{ mb: 1 }}>📎 {fileName}</Typography>
-        <Button variant="outlined" size="small" href={answer} target="_blank" rel="noopener noreferrer"
-          sx={{ borderColor: '#3498db', color: '#3498db', '&:hover': { borderColor: '#2980b9', backgroundColor: 'rgba(52, 152, 219, 0.08)' } }}>
+        <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.primary }}>📎 {fileName}</Typography>
+        <Button
+          variant="outlined"
+          size="small"
+          href={fileUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          sx={{
+            borderColor: theme.palette.primary.main,
+            color: theme.palette.primary.main,
+            '&:hover': {
+              borderColor: theme.palette.primary.dark,
+              backgroundColor: theme.palette.mode === 'dark'
+                ? 'rgba(25, 118, 210, 0.16)'
+                : 'rgba(25, 118, 210, 0.08)'
+            }
+          }}
+        >
           View
         </Button>
       </Box>
     );
   }
+
   if (Array.isArray(answer)) return answer.join(', ');
   if (typeof answer === 'object') return JSON.stringify(answer);
   if (typeof answer === 'boolean') return answer ? 'Yes' : 'No';
@@ -95,6 +126,9 @@ const renderAnswer = answer => {
 const FeedbackResponses = () => {
   const { eventId } = useParams();
   const navigate = useNavigate();
+  const theme = useTheme();
+  
+  console.log('📍 Current Page: Feedback Responses Page', { eventId });
   const user = useSelector(s => s.auth.user);
 
 
@@ -102,9 +136,11 @@ const FeedbackResponses = () => {
   const [responses, setResponses] = useState([]);
   const [schema, setSchema] = useState([]);
   const [loading, setLoading] = useState(true);
+
   const [error, setError] = useState('');
   const [viewMode, setViewMode] = useState('user');
   const [deleting, setDeleting] = useState(false);
+  const [showAnalytics, setShowAnalytics] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -117,6 +153,8 @@ const FeedbackResponses = () => {
         setEvent(eventRes.data);
         const schemaData = eventRes.data?.feedbackForm?.schema || {};
         setSchema(schemaData);
+        console.log('>>> [FeedbackResponsesPage] Responses data:', respRes.data);
+        console.log('>>> [FeedbackResponsesPage] First response user:', respRes.data[0]?.user);
         setResponses(respRes.data);
       } catch (error) {
         setError(error.response?.status === 403 ? 'Not authorized to view responses.' : 'Failed to load responses.');
@@ -181,30 +219,125 @@ const FeedbackResponses = () => {
 
   if (loading) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", mt: 10 }}>
+      <Box sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: '100vh',
+        backgroundColor: theme.palette.background.default
+      }}>
         <CircularProgress />
-        <Typography sx={{ ml: 2 }}>Loading...</Typography>
+        <Typography sx={{ ml: 2, color: theme.palette.text.primary }}>Loading...</Typography>
       </Box>
     );
   }
 
   if (error) {
-    return <Alert severity="error" sx={{ m: 3 }}>{error}</Alert>;
+    return (
+      <Box sx={{
+        p: 3,
+        backgroundColor: theme.palette.background.default,
+        minHeight: '100vh'
+      }}>
+        <Alert severity="error" sx={{ m: 3 }}>{error}</Alert>
+      </Box>
+    );
   }
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(-1)} sx={{ mb: 2 }}>Back</Button>
+    <Box sx={{
+      backgroundColor: theme.palette.background.default,
+      minHeight: '100vh',
+      p: 3
+    }}>
+      <Button
+        startIcon={<ArrowBackIcon />}
+        onClick={() => navigate(-1)}
+        sx={{
+          mb: 2,
+          color: theme.palette.text.primary,
+          borderColor: theme.palette.divider,
+          '&:hover': {
+            backgroundColor: theme.palette.mode === 'dark'
+              ? 'rgba(255,255,255,0.1)'
+              : 'rgba(0,0,0,0.04)'
+          }
+        }}
+        variant="outlined"
+      >
+        Back
+      </Button>
 
       <Box sx={{ textAlign: 'center', mb: 3 }}>
-        <Typography variant="h4">{event?.title || 'Event'}</Typography>
+        <Typography variant="h4" sx={{ color: theme.palette.text.primary }}>
+          {event?.title || 'Event'}
+        </Typography>
       </Box>
 
-      {/* AI-powered summary here */}
-      <AIFeedbackSummary eventId={eventId} />
+      {/* Action Buttons */}
+      <Box sx={{ textAlign: 'center', mb: 3, display: 'flex', gap: 2, justifyContent: 'center' }}>
+        <Button
+          variant="contained"
+          onClick={() => setShowAnalytics(!showAnalytics)}
+          startIcon={<AssessmentIcon />}
+          sx={{
+            backgroundColor: theme.palette.mode === 'dark' ? '#9b59b6' : '#8e44ad',
+            '&:hover': {
+              backgroundColor: theme.palette.mode === 'dark' ? '#8e44ad' : '#7d3c98'
+            }
+          }}
+        >
+          {showAnalytics ? 'Hide AI Insights' : 'Show AI Insights'}
+        </Button>
 
-      <Paper sx={{ mt: 3, p: 2, borderRadius: 2 }}>
-        <Tabs value={viewMode} onChange={(e, val) => setViewMode(val)} centered>
+        <Button
+          variant="contained"
+          color="error"
+          onClick={handleDelete}
+          disabled={deleting}
+          sx={{
+            backgroundColor: theme.palette.error.main,
+            '&:hover': {
+              backgroundColor: theme.palette.error.dark
+            },
+            '&:disabled': {
+              backgroundColor: theme.palette.action.disabledBackground
+            }
+          }}
+        >
+          {deleting ? 'Deleting...' : 'Delete Form & Responses'}
+        </Button>
+      </Box>
+
+      {/* AI-powered summary here - only show when AI insights is enabled */}
+      {showAnalytics && <AIFeedbackSummary eventId={eventId} />}
+
+      <Paper sx={{
+        mt: 3,
+        p: 2,
+        borderRadius: 2,
+        backgroundColor: theme.palette.background.paper,
+        border: `1px solid ${theme.palette.divider}`,
+        boxShadow: theme.palette.mode === 'dark'
+          ? '0 4px 20px rgba(0,0,0,0.3)'
+          : '0 4px 20px rgba(0,0,0,0.08)'
+      }}>
+        <Tabs
+          value={viewMode}
+          onChange={(e, val) => setViewMode(val)}
+          centered
+          sx={{
+            '& .MuiTab-root': {
+              color: theme.palette.text.secondary,
+              '&.Mui-selected': {
+                color: theme.palette.primary.main
+              }
+            },
+            '& .MuiTabs-indicator': {
+              backgroundColor: theme.palette.primary.main
+            }
+          }}
+        >
           <Tab icon={<PersonIcon />} iconPosition="start" label="By User" value="user" />
           <Tab icon={<HelpOutlineIcon />} iconPosition="start" label="By Question" value="question" />
         </Tabs>
@@ -212,21 +345,76 @@ const FeedbackResponses = () => {
 
       {/* Responses */}
       {responses.length === 0 ? (
-        <Paper sx={{ mt: 3, p: 5, textAlign: 'center' }}>
-          <AssessmentIcon sx={{ fontSize: 60, color: 'gray' }} />
-          <Typography sx={{ mt: 2 }}>No feedback responses yet.</Typography>
+        <Paper sx={{
+          mt: 3,
+          p: 5,
+          textAlign: 'center',
+          backgroundColor: theme.palette.background.paper,
+          border: `1px solid ${theme.palette.divider}`,
+          boxShadow: theme.palette.mode === 'dark'
+            ? '0 4px 20px rgba(0,0,0,0.3)'
+            : '0 4px 20px rgba(0,0,0,0.08)'
+        }}>
+          <AssessmentIcon sx={{
+            fontSize: 60,
+            color: theme.palette.text.secondary
+          }} />
+          <Typography sx={{
+            mt: 2,
+            color: theme.palette.text.primary
+          }}>
+            No feedback responses yet.
+          </Typography>
         </Paper>
       ) : (
         <Box sx={{ mt: 3 }}>
           {viewMode === 'user' ? (
             responses.map((resp, i) => (
-              <Paper key={resp.id} sx={{ mb: 2 }}>
-                <Accordion>
-                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Paper key={resp.id} sx={{
+                mb: 2,
+                backgroundColor: theme.palette.background.paper,
+                border: `1px solid ${theme.palette.divider}`,
+                boxShadow: theme.palette.mode === 'dark'
+                  ? '0 4px 20px rgba(0,0,0,0.3)'
+                  : '0 4px 20px rgba(0,0,0,0.08)'
+              }}>
+                <Accordion sx={{
+                  backgroundColor: 'transparent',
+                  '&:before': {
+                    display: 'none',
+                  },
+                  '& .MuiAccordionSummary-root': {
+                    backgroundColor: theme.palette.mode === 'dark'
+                      ? 'rgba(255,255,255,0.05)'
+                      : 'rgba(0,0,0,0.02)',
+                    '&:hover': {
+                      backgroundColor: theme.palette.mode === 'dark'
+                        ? 'rgba(255,255,255,0.08)'
+                        : 'rgba(0,0,0,0.04)'
+                    }
+                  },
+                  '& .MuiAccordionDetails-root': {
+                    backgroundColor: 'transparent'
+                  }
+                }}>
+                  <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ color: theme.palette.text.primary }} />}>
                     <Box sx={{ width: '100%', display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Chip label={`Response #${i + 1}`} />
-                      <Typography>{resp.user?.name || 'Anonymous'}</Typography>
-                      <Typography sx={{ ml: 'auto' }}>{formatDate(resp.submittedAt)}</Typography>
+                      <Chip
+                        label={`Response #${i + 1}`}
+                        sx={{
+                          backgroundColor: theme.palette.primary.main,
+                          color: theme.palette.primary.contrastText
+                        }}
+                      />
+                      <Typography sx={{ color: theme.palette.text.primary }}>
+                        {resp.user?.name || 'Anonymous'}
+                      </Typography>
+                      <Typography sx={{
+                        ml: 'auto',
+                        color: theme.palette.text.secondary
+                      }}>
+                        {formatDate(resp.submittedAt)}
+                      </Typography>
                     </Box>
                   </AccordionSummary>
                   <AccordionDetails>
@@ -235,8 +423,15 @@ const FeedbackResponses = () => {
                       const qNum = getQuestionNumber(schema, qName);
                       return (
                         <Box key={qName} sx={{ mb: 2 }}>
-                          <Typography sx={{ fontWeight: 'bold' }}>{`Q${qNum}. ${qMeta?.title || qMeta?.label || qName}`}</Typography>
-                          <Typography>{renderAnswer(answer)}</Typography>
+                          <Typography sx={{
+                            fontWeight: 'bold',
+                            color: theme.palette.text.primary
+                          }}>
+                            {`Q${qNum}. ${qMeta?.title || qMeta?.label || qName}`}
+                          </Typography>
+                          <Typography sx={{ color: theme.palette.text.primary }}>
+                            {renderAnswer(answer, theme)}
+                          </Typography>
                         </Box>
                       );
                     })}
@@ -246,12 +441,45 @@ const FeedbackResponses = () => {
             ))
           ) : (
             aggregates.map(({ question, answers }, idx) => (
-              <Paper key={question.name || idx} sx={{ mb: 2 }}>
-                <Accordion>
-                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Paper key={question.name || idx} sx={{
+                mb: 2,
+                backgroundColor: theme.palette.background.paper,
+                border: `1px solid ${theme.palette.divider}`,
+                boxShadow: theme.palette.mode === 'dark'
+                  ? '0 4px 20px rgba(0,0,0,0.3)'
+                  : '0 4px 20px rgba(0,0,0,0.08)'
+              }}>
+                <Accordion sx={{
+                  backgroundColor: 'transparent',
+                  '&:before': {
+                    display: 'none',
+                  },
+                  '& .MuiAccordionSummary-root': {
+                    backgroundColor: theme.palette.mode === 'dark'
+                      ? 'rgba(255,255,255,0.05)'
+                      : 'rgba(0,0,0,0.02)',
+                    '&:hover': {
+                      backgroundColor: theme.palette.mode === 'dark'
+                        ? 'rgba(255,255,255,0.08)'
+                        : 'rgba(0,0,0,0.04)'
+                    }
+                  },
+                  '& .MuiAccordionDetails-root': {
+                    backgroundColor: 'transparent'
+                  }
+                }}>
+                  <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ color: theme.palette.text.primary }} />}>
                     <Box sx={{ width: '100%', display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Chip label={`Q${idx + 1}. ${question.title || question.label || question.name}`} />
-                      <Typography>{`(${answers.length} responses)`}</Typography>
+                      <Chip
+                        label={`Q${idx + 1}. ${question.title || question.label || question.name}`}
+                        sx={{
+                          backgroundColor: theme.palette.primary.main,
+                          color: theme.palette.primary.contrastText
+                        }}
+                      />
+                      <Typography sx={{ color: theme.palette.text.primary }}>
+                        {`(${answers.length} responses)`}
+                      </Typography>
                     </Box>
                   </AccordionSummary>
                   <AccordionDetails>
@@ -260,11 +488,30 @@ const FeedbackResponses = () => {
                       answers={answers.map(a => a.answer)}
                     />
 
-                    <Typography sx={{ mt: 2, fontWeight: 'bold' }}>Individual Responses:</Typography>
+                    <Typography sx={{
+                      mt: 2,
+                      fontWeight: 'bold',
+                      color: theme.palette.text.primary
+                    }}>
+                      Individual Responses:
+                    </Typography>
                     {answers.map((a, i) => (
-                      <Box key={i} sx={{ mt: 1, mb: 1, p: 1, bgcolor: '#f5f5f5', borderRadius: 1 }}>
-                        <Typography variant="caption">{`${a.submittedBy} (${formatDate(a.submittedAt)})`}</Typography>
-                        <Typography>{renderAnswer(a.answer)}</Typography>
+                      <Box key={i} sx={{
+                        mt: 1,
+                        mb: 1,
+                        p: 1,
+                        bgcolor: theme.palette.mode === 'dark'
+                          ? 'rgba(255,255,255,0.05)'
+                          : 'rgba(0,0,0,0.02)',
+                        borderRadius: 1,
+                        border: `1px solid ${theme.palette.divider}`
+                      }}>
+                        <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+                          {`${a.submittedBy} (${formatDate(a.submittedAt)})`}
+                        </Typography>
+                        <Typography sx={{ color: theme.palette.text.primary }}>
+                          {renderAnswer(a.answer, theme)}
+                        </Typography>
                       </Box>
                     ))}
                   </AccordionDetails>

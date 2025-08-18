@@ -1,22 +1,24 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import axios from "../api/axiosInstance";
+import { ArrowBack as ArrowBackIcon, Save as SaveIcon } from "@mui/icons-material";
 import {
+  Alert,
   Box,
   Button,
-  TextField,
-  Typography,
-  Alert,
   CircularProgress,
   Container,
-  Paper
+  Paper,
+  TextField,
+  Typography
 } from "@mui/material";
-import { Add as AddIcon, ArrowBack as ArrowBackIcon, Save as SaveIcon } from "@mui/icons-material";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import axios from "../api/axiosInstance";
 
 export default function EditEvent() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const [form, setForm] = useState({ title: "", description: "", date: "", time: "" });
+  
+  console.log('📍 Current Page: Edit Event Page', { eventId: id });
+  const [form, setForm] = useState({ title: "", description: "", date: "", time: "", ticketPrice: "" });
   const [banner, setBanner] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
@@ -35,6 +37,7 @@ export default function EditEvent() {
           description: event.description || "",
           date: event.date ? event.date.slice(0, 10) : "",
           time: event.date ? new Date(event.date).toISOString().slice(11, 16) : "",
+          ticketPrice: event.ticketPrice ? event.ticketPrice.toString() : "",
         });
         setCurrentBannerUrl(event.bannerUrl || "");
       } catch (err) {
@@ -60,6 +63,9 @@ export default function EditEvent() {
       data.append("description", form.description);
       data.append("date", form.date);
       data.append("time", form.time);
+      if (form.ticketPrice) {
+        data.append("ticketPrice", form.ticketPrice);
+      }
       if (banner) {
         data.append("banner", banner);
       }
@@ -77,11 +83,15 @@ export default function EditEvent() {
 
   if (loading) {
     return (
-      <Container maxWidth="md" sx={{ py: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-          <CircularProgress size={60} />
-        </Box>
-      </Container>
+      <Box sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '100vh',
+        backgroundColor: theme.palette.background.default
+      }}>
+        <CircularProgress size={60} />
+      </Box>
     );
   }
 
@@ -106,7 +116,7 @@ export default function EditEvent() {
           >
             Back to My Events
           </Button>
-         
+
         </Box>
 
         {/* Alerts */}
@@ -169,6 +179,24 @@ export default function EditEvent() {
               slotProps={{ inputLabel: { shrink: true } }}
             />
           </Box>
+
+          <TextField
+            name="ticketPrice"
+            label="Ticket Price (Optional)"
+            type="number"
+            fullWidth
+            value={form.ticketPrice}
+            onChange={handleInput}
+            margin="normal"
+            variant="outlined"
+            placeholder="0.00"
+            inputProps={{
+              min: 0,
+              step: 0.01
+            }}
+            helperText="Leave empty for free events"
+          />
+
           <Button
             component="label"
             variant="outlined"

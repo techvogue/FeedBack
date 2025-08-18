@@ -1,50 +1,58 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import {
-  Box,
-  Typography,
-  Paper,
-  Button,
-  CircularProgress,
-  Alert,
-  Grid,
-} from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
-  Edit as EditIcon,
-  Share as ShareIcon,
-  Visibility as ViewIcon,
   Assessment as AssessmentIcon,
+  Edit as EditIcon,
+  Payment as PaymentIcon,
+  Share as ShareIcon,
+  Visibility as ViewIcon
 } from '@mui/icons-material';
-import FeedbackFormCreator from '../components/FeedbackFormCreator';
-import FeedbackShare from '../components/FeedbackShare';
+
+import {
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  Grid,
+  Paper,
+  Typography,
+  useTheme,
+} from '@mui/material';
+
+import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { useNavigate, useParams } from 'react-router-dom';
 import axios from '../api/axiosInstance';
+import BuyTicketModal from '../components/BuyTicketModal';
+import FeedbackFormCreator from '../components/FeedbackFormCreator';
+import FeedbackFormPreviewModal from '../components/FeedbackFormPreviewModal';
+import FeedbackShare from '../components/FeedbackShare';
+import { useFeedbackForm } from '../hooks/useFeedbackForm';
 
 const EventDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+
+  console.log('📍 Current Page: Event Detail Page', { eventId: id });
+  const theme = useTheme();
   const { user } = useSelector((state) => state.auth);
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [hasFeedbackForm, setHasFeedbackForm] = useState(false);
+  const { hasFeedbackForm, isChecking: isCheckingFeedbackForm, refresh: refreshFeedbackForm } = useFeedbackForm(id);
   const [showFormCreator, setShowFormCreator] = useState(false);
   const [showShare, setShowShare] = useState(false);
+
+  const [previewFormData, setPreviewFormData] = useState(null);
+  const [showPreview, setShowPreview] = useState(false);
+  const [showBuyTicket, setShowBuyTicket] = useState(false);
 
   useEffect(() => {
     const fetchEvent = async () => {
       try {
         const response = await axios.get(`/events/${id}`);
         setEvent(response.data);
-        
 
-        try {
-          const feedbackResponse = await axios.get(`/feedback/forms/${id}`);
-          setHasFeedbackForm(true);
-        } catch (err) {
-          setHasFeedbackForm(false);
-        }
+
       } catch (err) {
         setError('Failed to load event details');
       } finally {
@@ -61,7 +69,8 @@ const EventDetail = () => {
 
   const handleFormSaved = () => {
     setShowFormCreator(false);
-    setHasFeedbackForm(true);
+    // Refresh the feedback form status after saving
+    refreshFeedbackForm();
   };
 
   const handleGiveFeedback = () => {
@@ -72,10 +81,40 @@ const EventDetail = () => {
     navigate(`/events/${id}/responses`);
   };
 
+  const handlePreviewForm = async () => {
+    try {
+      const response = await axios.get(`/feedback/forms/${id}`);
+      setPreviewFormData(response.data);
+      setShowPreview(true);
+    } catch (error) {
+      if (error.response?.status === 404) {
+        // No feedback form exists - this is expected behavior
+        console.info('No feedback form exists for this event yet');
+      } else {
+        console.error('Failed to fetch feedback form preview:', error);
+      }
+    }
+  };
+
+  const handleBuyTicket = () => {
+    setShowBuyTicket(true);
+  };
+
+  const handleTicketSuccess = () => {
+    setShowBuyTicket(false);
+    // Stripe will redirect to thank you page automatically
+  };
+
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-        <CircularProgress />
+      <Box sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '100vh',
+        backgroundColor: theme.palette.background.default
+      }}>
+        <CircularProgress size={60} />
       </Box>
     );
   }
@@ -97,6 +136,7 @@ const EventDetail = () => {
   }
 
   const isOwner = user && event.owner?.id === user.id;
+  const isAuthenticated = !!user;
   const formattedDate = new Date(event.date).toLocaleDateString();
   const formattedTime = new Date(event.date).toLocaleTimeString();
 
@@ -111,25 +151,28 @@ const EventDetail = () => {
   }
 
   return (
-    <Box sx={{ 
-      minHeight: '100vh', 
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    <Box sx={{
+      minHeight: '100vh',
+      background: theme.palette.background.default,
       py: 4,
       px: 2
     }}>
       <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
-    
         <Box sx={{ mb: 3 }}>
           <Button
             startIcon={<ArrowBackIcon />}
             onClick={() => navigate(-1)}
             variant="outlined"
             sx={{
-              color: 'white',
-              borderColor: 'rgba(255,255,255,0.3)',
+              color: theme.palette.mode === 'dark' ? 'white' : 'white',
+              borderColor: theme.palette.mode === 'dark'
+                ? 'rgba(255,255,255,0.3)'
+                : 'rgba(255,255,255,0.3)',
               '&:hover': {
                 borderColor: 'white',
-                backgroundColor: 'rgba(255,255,255,0.1)'
+                backgroundColor: theme.palette.mode === 'dark'
+                  ? 'rgba(255,255,255,0.1)'
+                  : 'rgba(255,255,255,0.1)'
               }
             }}
           >
@@ -138,15 +181,17 @@ const EventDetail = () => {
         </Box>
 
         <Grid container spacing={3}>
-          
-          <Grid item xs={12} md={8}>
+          <Grid xs={12} md={8}>
             <Paper
               sx={{
                 p: 0,
-                background: 'rgba(255,255,255,0.98)',
+                background: theme.palette.background.paper,
                 borderRadius: 3,
-                boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+                boxShadow: theme.palette.mode === 'dark'
+                  ? '0 8px 32px rgba(0,0,0,0.3)'
+                  : '0 8px 32px rgba(0,0,0,0.1)',
                 overflow: 'hidden',
+                border: `1px solid ${theme.palette.divider}`,
               }}
             >
               <Box
@@ -160,48 +205,93 @@ const EventDetail = () => {
                 }}
               />
               <Box sx={{ p: 4 }}>
-                <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 2, color: '#2c3e50' }}>
+                <Typography variant="h4" sx={{
+                  fontWeight: 'bold',
+                  mb: 2,
+                  color: theme.palette.text.primary
+                }}>
                   {event.title}
                 </Typography>
-                <Typography variant="body1" sx={{ mb: 3, color: '#34495e', fontSize: '1.1rem' }}>
+                <Typography variant="body1" sx={{
+                  mb: 3,
+                  color: theme.palette.text.secondary,
+                  fontSize: '1.1rem'
+                }}>
                   {event.description}
                 </Typography>
-                <Typography variant="subtitle1" sx={{ mb: 1, color: '#2c3e50' }}>
-                  <strong style={{ color: '#3498db' }}>Date:</strong> {formattedDate}
+                <Typography variant="subtitle1" sx={{
+                  mb: 1,
+                  color: theme.palette.text.primary
+                }}>
+                  <strong style={{ color: theme.palette.primary.main }}>Date:</strong> {formattedDate}
                 </Typography>
-                <Typography variant="subtitle1" sx={{ mb: 1, color: '#2c3e50' }}>
-                  <strong style={{ color: '#3498db' }}>Time:</strong> {formattedTime}
+                <Typography variant="subtitle1" sx={{
+                  mb: 1,
+                  color: theme.palette.text.primary
+                }}>
+                  <strong style={{ color: theme.palette.primary.main }}>Time:</strong> {formattedTime}
                 </Typography>
-                <Typography variant="subtitle2" sx={{ mt: 3, color: '#7f8c8d' }}>
-                  <strong style={{ color: '#34495e' }}>Organized by:</strong> {event.owner?.name || 'Unknown'} ({event.owner?.email})
+                <Typography variant="subtitle1" sx={{
+                  mb: 1,
+                  color: theme.palette.text.primary
+                }}>
+                  <strong style={{ color: theme.palette.primary.main }}>Ticket Price:</strong>
+                  {event.ticketPrice && event.ticketPrice > 0 ? (
+                    <span style={{
+                      color: theme.palette.success.main,
+                      fontWeight: 'bold',
+                      marginLeft: 8
+                    }}>
+                      ₹{parseFloat(event.ticketPrice).toFixed(2)}
+                    </span>
+                  ) : (
+                    <span style={{
+                      color: theme.palette.success.main,
+                      fontWeight: 'bold',
+                      marginLeft: 8
+                    }}>
+                      Free Event
+                    </span>
+                  )}
+                </Typography>
+                <Typography variant="subtitle2" sx={{
+                  mt: 3,
+                  color: theme.palette.text.secondary
+                }}>
+                  <strong style={{ color: theme.palette.text.primary }}>Organized by:</strong> {event.owner?.name || 'Unknown'} ({event.owner?.email})
                 </Typography>
               </Box>
             </Paper>
+
+
           </Grid>
 
-
-          <Grid item xs={12} md={4}>
+          <Grid xs={12} md={4}>
             <Paper
               sx={{
                 p: 3,
-                background: 'rgba(255,255,255,0.98)',
+                background: theme.palette.background.paper,
                 borderRadius: 3,
-                boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+                boxShadow: theme.palette.mode === 'dark'
+                  ? '0 8px 32px rgba(0,0,0,0.3)'
+                  : '0 8px 32px rgba(0,0,0,0.1)',
                 height: 'fit-content',
+                border: `1px solid ${theme.palette.divider}`,
               }}
             >
               {isOwner ? (
-              
                 <>
                   {!hasFeedbackForm ? (
                     <Button
                       variant="contained"
                       fullWidth
                       onClick={handleShowFormCreator}
-                      sx={{ 
+                      sx={{
                         py: 2,
-                        backgroundColor: '#3498db',
-                        '&:hover': { backgroundColor: '#2980b9' }
+                        backgroundColor: theme.palette.primary.main,
+                        '&:hover': {
+                          backgroundColor: theme.palette.primary.dark
+                        }
                       }}
                     >
                       Create Feedback Form
@@ -214,9 +304,18 @@ const EventDetail = () => {
                         startIcon={<EditIcon />}
                         onClick={handleShowFormCreator}
                         sx={{
-                          borderColor: '#3498db',
-                          color: '#3498db',
-                          '&:hover': { borderColor: '#2980b9', backgroundColor: 'rgba(52, 152, 219, 0.1)' }
+                          mb: 2,
+                          borderColor: theme.palette.primary.main,
+                          color: theme.palette.primary.main,
+                          fontWeight: 'bold',
+                          '&:hover': {
+                            borderColor: theme.palette.primary.dark,
+                            backgroundColor: theme.palette.mode === 'dark'
+                              ? 'rgba(25, 118, 210, 0.08)'
+                              : 'rgba(25, 118, 210, 0.04)',
+                            transform: 'translateY(-1px)'
+                          },
+                          transition: 'all 0.3s ease'
                         }}
                       >
                         Edit Feedback Form
@@ -225,11 +324,20 @@ const EventDetail = () => {
                         variant="outlined"
                         fullWidth
                         startIcon={<ViewIcon />}
-                        onClick={() => navigate(`/feedback/${id}`)}
+                        onClick={handlePreviewForm}
                         sx={{
-                          borderColor: '#27ae60',
-                          color: '#27ae60',
-                          '&:hover': { borderColor: '#229954', backgroundColor: 'rgba(39, 174, 96, 0.1)' }
+                          mb: 2,
+                          borderColor: theme.palette.success.main,
+                          color: theme.palette.success.main,
+                          fontWeight: 'bold',
+                          '&:hover': {
+                            borderColor: theme.palette.success.dark,
+                            backgroundColor: theme.palette.mode === 'dark'
+                              ? 'rgba(76, 175, 80, 0.08)'
+                              : 'rgba(76, 175, 80, 0.04)',
+                            transform: 'translateY(-1px)'
+                          },
+                          transition: 'all 0.3s ease'
                         }}
                       >
                         Preview Form
@@ -240,22 +348,39 @@ const EventDetail = () => {
                         startIcon={<AssessmentIcon />}
                         onClick={handleViewResponses}
                         sx={{
-                          borderColor: '#9b59b6',
-                          color: '#9b59b6',
-                          '&:hover': { borderColor: '#8e44ad', backgroundColor: 'rgba(155, 89, 182, 0.1)' }
+                          mb: 2,
+                          borderColor: theme.palette.secondary.main,
+                          color: theme.palette.secondary.main,
+                          fontWeight: 'bold',
+                          '&:hover': {
+                            borderColor: theme.palette.secondary.dark,
+                            backgroundColor: theme.palette.mode === 'dark'
+                              ? 'rgba(156, 39, 176, 0.08)'
+                              : 'rgba(156, 39, 176, 0.04)',
+                            transform: 'translateY(-1px)'
+                          },
+                          transition: 'all 0.3s ease'
                         }}
                       >
-                        See Responses
+                        View Analytics
                       </Button>
                       <Button
-                        variant="outlined"
+                        variant="contained"
                         fullWidth
                         startIcon={<ShareIcon />}
-                        onClick={() => setShowShare(!showShare)}
+                        onClick={() => setShowShare(true)}
                         sx={{
-                          borderColor: '#f39c12',
-                          color: '#f39c12',
-                          '&:hover': { borderColor: '#e67e22', backgroundColor: 'rgba(243, 156, 18, 0.1)' }
+                          backgroundColor: theme.palette.warning.main,
+                          color: theme.palette.warning.contrastText,
+                          fontWeight: 'bold',
+                          '&:hover': {
+                            backgroundColor: theme.palette.warning.dark,
+                            transform: 'translateY(-1px)',
+                            boxShadow: theme.palette.mode === 'dark'
+                              ? '0 4px 12px rgba(255, 152, 0, 0.3)'
+                              : '0 4px 12px rgba(255, 152, 0, 0.3)'
+                          },
+                          transition: 'all 0.3s ease'
                         }}
                       >
                         Share Form
@@ -264,42 +389,94 @@ const EventDetail = () => {
                   )}
                 </>
               ) : (
-                
-                hasFeedbackForm && (
-                  <>
+                <>
+                  {event.ticketPrice && event.ticketPrice > 0 ? (
                     <Button
                       variant="contained"
                       fullWidth
-                      onClick={handleGiveFeedback}
-                      sx={{ 
+                      startIcon={<PaymentIcon />}
+                      onClick={handleBuyTicket}
+                      sx={{
                         py: 2,
-                        backgroundColor: '#27ae60',
-                        '&:hover': { backgroundColor: '#229954' }
+                        mb: 2,
+                        backgroundColor: theme.palette.error.main,
+                        '&:hover': {
+                          backgroundColor: theme.palette.error.dark
+                        }
                       }}
                     >
-                      Give Feedback
+                      Buy Ticket - ₹{parseFloat(event.ticketPrice).toFixed(2)}
                     </Button>
-                    <Typography variant="body2" sx={{ 
-                      mt: 1, 
-                      textAlign: 'center', 
-                      color: '#7f8c8d',
-                      fontSize: '0.9rem'
-                    }}>
-                      Login required to submit feedback
-                    </Typography>
-                  </>
-                )
+                  ) : (
+                    <Button
+                      variant="contained"
+                      fullWidth
+                      startIcon={<PaymentIcon />}
+                      disabled
+                      sx={{
+                        py: 2,
+                        mb: 2,
+                        backgroundColor: theme.palette.grey[400],
+                        '&:hover': {
+                          backgroundColor: theme.palette.grey[400]
+                        }
+                      }}
+                    >
+                      Free Event
+                    </Button>
+                  )}
+
+                  <Button
+                    variant="outlined"
+                    fullWidth
+                    onClick={handleGiveFeedback}
+                    sx={{
+                      py: 2,
+                      borderColor: theme.palette.success.main,
+                      color: theme.palette.success.main,
+                      '&:hover': {
+                        borderColor: theme.palette.success.dark,
+                        backgroundColor: theme.palette.mode === 'dark'
+                          ? 'rgba(76, 175, 80, 0.08)'
+                          : 'rgba(76, 175, 80, 0.04)'
+                      }
+                    }}
+                  >
+                    Give Feedback
+                  </Button>
+                </>
               )}
 
-              {showShare && hasFeedbackForm && (
-                <Box sx={{ mt: 3 }}>
-                  <FeedbackShare eventId={id} />
-                </Box>
-              )}
+
             </Paper>
           </Grid>
         </Grid>
       </Box>
+
+      {/* Share Feedback Form Modal */}
+      {showShare && hasFeedbackForm && (
+        <FeedbackShare
+          eventId={id}
+          open={showShare}
+          onClose={() => setShowShare(false)}
+        />
+      )}
+
+      {/* Feedback Form Preview Modal */}
+      <FeedbackFormPreviewModal
+        open={showPreview}
+        onClose={() => setShowPreview(false)}
+        formData={previewFormData}
+        eventTitle={event?.title}
+      />
+
+      {/* Buy Ticket Modal */}
+      <BuyTicketModal
+        open={showBuyTicket}
+        onClose={() => setShowBuyTicket(false)}
+        event={event}
+        onSuccess={handleTicketSuccess}
+      />
     </Box>
   );
 };

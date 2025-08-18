@@ -97,6 +97,31 @@ exports.getMyEvents = async (req, res) => {
   }
 };
 
+// Get all public events (no authentication required)
+exports.getPublicEvents = async (req, res) => {
+  try {
+    const events = await prisma.event.findMany({
+      include: {
+        owner: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          }
+        }
+      },
+      orderBy: {
+        date: 'desc'
+      }
+    });
+
+    res.json(events);
+  } catch (err) {
+    console.error('Get public events error:', err);
+    res.status(500).json({ message: 'Failed to fetch events', error: err.message });
+  }
+};
+
 // Get event details by ID
 exports.getEventById = async (req, res) => {
   try {
@@ -116,7 +141,7 @@ exports.getEventById = async (req, res) => {
     if (!event) {
       return res.status(404).json({ message: 'Event not found' });
     }
-    
+
     res.json(event);
   } catch (err) {
     console.error('Get event by ID error:', err);
@@ -128,7 +153,7 @@ exports.getEventById = async (req, res) => {
 exports.updateEvent = async (req, res) => {
   try {
     const { title, description, date, time, ticketPrice } = req.body;
-    const eventId = parseInt(req.params.id);
+    const eventId = req.params.id; // Remove parseInt since id is a String (UUID)
     const userId = req.user.id;
 
     // Find event and check ownership
@@ -190,7 +215,7 @@ exports.updateEvent = async (req, res) => {
 // Delete event by ID
 exports.deleteEvent = async (req, res) => {
   try {
-    const eventId = parseInt(req.params.id);
+    const eventId = req.params.id; // Remove parseInt since id is a String (UUID)
     const userId = req.user.id;
     const event = await prisma.event.findUnique({ where: { id: eventId } });
     if (!event) {
