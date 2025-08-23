@@ -13,6 +13,7 @@ import {
   Share2,
   Sparkles
 } from "lucide-react";
+import { useNavigate } from 'react-router-dom';
 
 import React, { useLayoutEffect, useRef } from "react";
 
@@ -71,6 +72,7 @@ const itemVariants = {
 export default function LandingPage() {
   const containerRef = useRef(null);
   const theme = useTheme();
+  const navigate = useNavigate();
 
   console.log('📍 Current Page: Home/Landing Page');
 
@@ -245,6 +247,7 @@ export default function LandingPage() {
                   <Button
                     variant="contained"
                     size="large"
+                    onClick={() => navigate('/register')}
                     sx={{
                       px: 3,
                       py: 1.5,
@@ -252,6 +255,7 @@ export default function LandingPage() {
                       fontWeight: 600,
                       borderRadius: 2,
                       boxShadow: 3,
+                      cursor: 'pointer',
                       '&:hover': {
                         boxShadow: 4,
                       },
@@ -483,6 +487,7 @@ export default function LandingPage() {
             component={Button}
             variant="contained"
             size="large"
+            onClick={() => navigate('/register')}
             whileHover={{ scale: 1.05, y: -2 }}
             whileTap={{ scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 300 }}
@@ -496,13 +501,14 @@ export default function LandingPage() {
               background: 'linear-gradient(to right, #374151, #111827)',
               boxShadow: '0 4px 14px rgba(0,0,0,0.15)',
               textTransform: 'none',
+              cursor: 'pointer',
               '&:hover': {
                 boxShadow: '0 6px 20px rgba(0,0,0,0.3)',
                 background: 'linear-gradient(to right, #4b5563, #1f2937)',
               },
             }}
           >
-            <div className='flex items-center'>
+            <div className='flex items-center cursor-pointer'>
               <Sparkles style={{ animation: 'pulse 2s infinite', marginRight: '0.5rem' }} />
               Get Started Free
               <ArrowRight style={{ marginLeft: '1rem' }} />

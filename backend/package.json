@@ -6,6 +6,8 @@
   "scripts": {
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
+    "build": "echo 'Backend build completed'",
+    "lint": "echo 'No linting configured'",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
