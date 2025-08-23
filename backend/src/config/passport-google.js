@@ -3,13 +3,13 @@ const { PrismaClient } = require('../../generated/prisma');
 
 const prisma = new PrismaClient();
 
-module.exports = function(passport) {
+module.exports = function (passport) {
   passport.use(
     new GoogleStrategy(
       {
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: '/api/auth/google/callback',
+        callbackURL: 'https://feedback-uece.onrender.com/api/auth/google/callback',
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
