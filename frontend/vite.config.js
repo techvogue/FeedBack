@@ -4,7 +4,10 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  base: './',  // 👈 Important for Vercel deployment
+  base: '/',   
+  build: {
+    outDir: 'dist',
+  },
   server: {
     host: '0.0.0.0',
     port: 5173,

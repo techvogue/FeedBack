@@ -4,16 +4,10 @@
     {
       "src": "package.json",
       "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist"
-      }
+      "config": { "distDir": "dist" }
     }
   ],
   "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ],
-  "framework": "vite"
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }
