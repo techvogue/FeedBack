@@ -1,4 +1,3 @@
-import { Google } from '@mui/icons-material';
 import {
   Alert,
   Box,
@@ -11,7 +10,8 @@ import {
   Typography,
   useTheme,
 } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { FcGoogle } from 'react-icons/fc';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { clearError, login } from '../redux/slices/authSlice';
@@ -175,16 +175,17 @@ const Login = () => {
               sx={{
                 mb: 3,
                 py: 1.5,
-                backgroundColor: theme.palette.primary.main,
-                color: theme.palette.primary.contrastText,
+                backgroundColor: theme.palette.mode === 'dark' ? '#FFFFFF' : '#000000',
+                color: theme.palette.mode === 'dark' ? '#000000' : '#FFFFFF',
                 fontSize: '1.1rem',
                 cursor: 'pointer',
                 '&:hover': {
-                  backgroundColor: theme.palette.primary.dark,
+                  backgroundColor: theme.palette.mode === 'dark' ? '#FFFFFF' : '#000000',
                 },
                 '&:disabled': {
-                  backgroundColor: theme.palette.action.disabledBackground,
-                  color: theme.palette.action.disabled,
+                  backgroundColor: theme.palette.mode === 'dark' ? '#FFFFFF' : '#000000',
+                  color: theme.palette.mode === 'dark' ? '#000000' : '#FFFFFF',
+                  opacity: 1,
                   cursor: 'not-allowed',
                 },
               }}
@@ -206,7 +207,7 @@ const Login = () => {
           <Button
             fullWidth
             variant="outlined"
-            startIcon={<Google />}
+            startIcon={<FcGoogle />}
             onClick={handleGoogleLogin}
             sx={{
               mb: 4,

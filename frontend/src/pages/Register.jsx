@@ -1,22 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { useNavigate, Link } from 'react-router-dom';
+import { PhotoCamera } from '@mui/icons-material';
 import {
-  Container,
-  Box,
-  Typography,
-  TextField,
-  Button,
   Alert,
-  CircularProgress,
-  Divider,
-  Paper,
   Avatar,
+  Box,
+  Button,
+  CircularProgress,
+  Container,
+  Divider,
   IconButton,
+  Paper,
+  TextField,
+  Typography,
   useTheme,
 } from '@mui/material';
-import { Google, PhotoCamera } from '@mui/icons-material';
-import { register, clearError } from '../redux/slices/authSlice';
+import { useEffect, useState } from 'react';
+import { FcGoogle } from 'react-icons/fc';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
+import { clearError, register } from '../redux/slices/authSlice';
 
 const Register = () => {
   const dispatch = useDispatch();
@@ -309,16 +310,17 @@ const Register = () => {
               sx={{
                 mb: 3,
                 py: 1.5,
-                backgroundColor: theme.palette.primary.main,
-                color: theme.palette.primary.contrastText,
+                backgroundColor: theme.palette.mode === 'dark' ? '#FFFFFF' : '#000000',
+                color: theme.palette.mode === 'dark' ? '#000000' : '#FFFFFF',
                 fontSize: '1.1rem',
                 cursor: 'pointer',
                 '&:hover': {
-                  backgroundColor: theme.palette.primary.dark,
+                  backgroundColor: theme.palette.mode === 'dark' ? '#FFFFFF' : '#000000',
                 },
                 '&:disabled': {
-                  backgroundColor: theme.palette.action.disabledBackground,
-                  color: theme.palette.action.disabled,
+                  backgroundColor: theme.palette.mode === 'dark' ? '#FFFFFF' : '#000000',
+                  color: theme.palette.mode === 'dark' ? '#000000' : '#FFFFFF',
+                  opacity: 1,
                   cursor: 'not-allowed',
                 },
               }}
@@ -340,7 +342,7 @@ const Register = () => {
           <Button
             fullWidth
             variant="outlined"
-            startIcon={<Google />}
+            startIcon={<FcGoogle />}
             onClick={handleGoogleLogin}
             sx={{
               mb: 4,

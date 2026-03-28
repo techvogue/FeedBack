@@ -5,12 +5,11 @@ import {
   Mail,
   Twitter,
 } from "lucide-react";
-import React from "react";
 
 export default function Footer() {
   return (
     <footer className="relative bg-black/60 text-white font-sans border-t border-gray-800 backdrop-blur-md">
-      <div className="max-w-7xl mx-auto px-6 py-12 md:flex md:justify-between md:items-center bg-black/40 backdrop-blur-lg shadow-2xl shadow-black/20 ring-1 ring-white/10">
+      <div className=" mx-auto px-6 py-12 md:flex md:justify-between md:items-center bg-black/40 backdrop-blur-lg shadow-2xl shadow-black/20 ring-1 ring-white/10">
         {/* Branding */}
         <div className="mb-8 md:mb-0 flex items-center space-x-3">
           <div className="text-3xl font-extrabold tracking-tight select-none">
