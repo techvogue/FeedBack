@@ -1,44 +1,49 @@
-const LocalStrategy = require('passport-local').Strategy;
-const bcrypt = require('bcryptjs');
-const { PrismaClient } = require('../../generated/prisma');
+const LocalStrategy = require("passport-local").Strategy;
+const bcrypt = require("bcryptjs");
+const prisma = require("../prismaClient");
 
-const prisma = new PrismaClient();
-
-module.exports = function(passport) {
+module.exports = function (passport) {
   passport.use(
     new LocalStrategy(
       {
-        usernameField: 'email',
-        passwordField: 'password',
+        usernameField: "email",
+        passwordField: "password",
       },
       async (email, password, done) => {
         try {
           // Find user by email
           const user = await prisma.user.findUnique({
             where: { email: email },
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              profilePic: true,
+              password: true,
+            },
           });
 
           if (!user) {
-            return done(null, false, { message: 'Invalid email or password' });
+            return done(null, false, { message: "Invalid email or password" });
           }
 
           // Check if user has password (not OAuth user)
           if (!user.password) {
-            return done(null, false, { message: 'Please login with Google' });
+            return done(null, false, { message: "Please login with Google" });
           }
 
           // Compare password
           const isMatch = await bcrypt.compare(password, user.password);
           if (!isMatch) {
-            return done(null, false, { message: 'Invalid email or password' });
+            return done(null, false, { message: "Invalid email or password" });
           }
 
           return done(null, user);
         } catch (error) {
           return done(error);
         }
-      }
-    )
+      },
+    ),
   );
 
   passport.serializeUser((user, done) => {
@@ -49,6 +54,12 @@ module.exports = function(passport) {
     try {
       const user = await prisma.user.findUnique({
         where: { id: id },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          profilePic: true,
+        },
       });
       done(null, user);
     } catch (error) {

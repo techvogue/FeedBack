@@ -18,7 +18,6 @@ model User {
   createdAt         DateTime           @default(now())
   events            Event[] // User can have multiple Events
   feedbackResponses FeedbackResponse[] // User can have multiple FeedbackResponses
-  tickets           Ticket[] // User can have multiple tickets
 }
 
 model Event {
@@ -27,20 +26,21 @@ model Event {
   description       String
   date              DateTime
   bannerUrl         String
-  ticketPrice       Decimal?           @db.Decimal(10, 2) // Optional ticket price with 2 decimal places
   ownerId           String
   owner             User               @relation(fields: [ownerId], references: [id])
   createdAt         DateTime           @default(now())
   feedbackForm      FeedbackForm? // <--- ADDED: Inverse relation for one-to-one with FeedbackForm
   feedbackResponses FeedbackResponse[] // Event can have many FeedbackResponses
-  tickets           Ticket[] // Event can have multiple tickets
+
+  @@index([ownerId])
+  @@index([date])
 }
 
 model FeedbackForm {
   id      String @id @default(uuid())
   eventId String @unique
   schema  Json // Dynamic array of questions/fields
-  event   Event  @relation(fields: [eventId], references: [id])
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
 }
 
 model FeedbackResponse {
@@ -49,29 +49,12 @@ model FeedbackResponse {
   userId      String? // Optional for anonymous submissions
   answers     Json // [{questionId, answer}]
   submittedAt DateTime @default(now())
-  event       Event    @relation(fields: [eventId], references: [id])
-  user        User?    @relation(fields: [userId], references: [id])
-}
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
-model Ticket {
-  id                    String       @id @default(uuid())
-  eventId               String
-  userId                String
-  ticketNumber          String       @unique // Unique ticket number
-  attendeeName          String
-  attendeeEmail         String
-  ticketPrice           Decimal      @db.Decimal(10, 2)
-  stripePaymentIntentId String? // Stripe Payment Intent ID
-  stripeSessionId       String? // Stripe Checkout Session ID
-  status                TicketStatus @default(PENDING)
-  purchasedAt           DateTime     @default(now())
-  event                 Event        @relation(fields: [eventId], references: [id])
-  user                  User         @relation(fields: [userId], references: [id])
-}
-
-enum TicketStatus {
-  PENDING
-  CONFIRMED
-  CANCELLED
-  REFUNDED
+  @@unique([eventId, userId])
+  @@index([eventId])
+  @@index([userId])
+  @@index([eventId, submittedAt])
+  @@index([eventId, userId])
 }

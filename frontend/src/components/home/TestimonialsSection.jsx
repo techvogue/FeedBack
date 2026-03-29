@@ -20,14 +20,14 @@ export default function TestimonialsSection({ testimonials }) {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
           viewport={{ once: true }}
           style={{ textAlign: 'center', marginBottom: '4rem' }}
         >
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.1 }}
+            transition={{ duration: 0.45, delay: 0.05, ease: 'easeOut' }}
           >
             <Typography
               sx={{
@@ -46,7 +46,7 @@ export default function TestimonialsSection({ testimonials }) {
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
+            transition={{ duration: 0.45, delay: 0.05, ease: 'easeOut' }}
           >
             <Typography
               component={motion.h2}
@@ -59,8 +59,8 @@ export default function TestimonialsSection({ testimonials }) {
                 visible: {
                   opacity: 1,
                   transition: {
-                    staggerChildren: 0.03,
-                    delayChildren: 0.12,
+                    staggerChildren: 0.02,
+                    delayChildren: 0.06,
                   },
                 },
               }}
@@ -102,9 +102,9 @@ export default function TestimonialsSection({ testimonials }) {
               key={idx}
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: idx * 0.12 }}
+              transition={{ duration: 0.45, delay: idx * 0.08, ease: [0.22, 1, 0.36, 1] }}
               viewport={{ once: true }}
-              whileHover={{ y: -8, boxShadow: theme.palette.mode === 'dark' ? '0 20px 40px rgba(0,0,0,0.3)' : '0 20px 40px rgba(0,0,0,0.15)', transition: { duration: 0.3 } }}
+              whileHover={{ y: -8, boxShadow: theme.palette.mode === 'dark' ? '0 20px 40px rgba(0,0,0,0.3)' : '0 20px 40px rgba(0,0,0,0.15)', transition: { duration: 0.22, ease: 'easeOut' } }}
               style={{
                 padding: '32px',
                 borderRadius: '16px',
@@ -118,14 +118,14 @@ export default function TestimonialsSection({ testimonials }) {
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, delay: idx * 0.12 + 0.2 }}
+                transition={{ duration: 0.38, delay: idx * 0.08 + 0.12, ease: 'easeOut' }}
               >
                 <Typography sx={{ fontSize: '1.1rem', mb: 3, color: ratingColor, fontWeight: 800, letterSpacing: '0.05em' }}>⭐ 5.0 / 5.0</Typography>
               </motion.div>
               <motion.div
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
-                transition={{ duration: 0.6, delay: idx * 0.12 + 0.3 }}
+                transition={{ duration: 0.45, delay: idx * 0.08 + 0.18, ease: 'easeOut' }}
               >
                 <Typography
                   sx={{
@@ -144,7 +144,7 @@ export default function TestimonialsSection({ testimonials }) {
                 <motion.div
                   initial={{ scale: 0 }}
                   whileInView={{ scale: 1 }}
-                  transition={{ duration: 0.4, delay: idx * 0.12 + 0.4, type: 'spring', stiffness: 200 }}
+                  transition={{ duration: 0.3, delay: idx * 0.08 + 0.24, type: 'spring', stiffness: 240, damping: 18 }}
                 >
                   <Box
                     sx={{

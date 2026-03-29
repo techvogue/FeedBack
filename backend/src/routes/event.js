@@ -1,43 +1,52 @@
-const express = require('express');
-const passport = require('passport');
-const upload = require('../config/multer');
-const eventController = require('../controllers/eventController');
+const express = require("express");
+const upload = require("../config/multer");
+const validateRequest = require("../middleware/validateRequest");
+const { requireAuth } = require("../middleware/auth");
+const {
+  uuidParamSchema,
+  createEventSchema,
+  updateEventSchema,
+} = require("../validation/eventSchemas");
+const eventController = require("../controllers/eventController");
 const router = express.Router();
 
 // Create Event
 router.post(
-  '/',
-  passport.authenticate('jwt', { session: false }),
-  upload.single('banner'),
-  eventController.createEvent
+  "/",
+  requireAuth,
+  upload.single("banner"),
+  validateRequest({ body: createEventSchema }),
+  eventController.createEvent,
 );
 
 // List User Events
-router.get(
-  '/',
-  passport.authenticate('jwt', { session: false }),
-  eventController.getMyEvents
-);
+router.get("/", requireAuth, eventController.getMyEvents);
 
 // Get all public events (no authentication required)
-router.get('/public', eventController.getPublicEvents);
+router.get("/public", eventController.getPublicEvents);
 
 // Event details by ID (public for feedback forms)
-router.get('/:id', eventController.getEventById);
+router.get(
+  "/:id",
+  validateRequest({ params: uuidParamSchema }),
+  eventController.getEventById,
+);
 
 // Update event by ID
 router.patch(
-  '/:id',
-  passport.authenticate('jwt', { session: false }),
-  upload.single('banner'),
-  eventController.updateEvent
+  "/:id",
+  requireAuth,
+  upload.single("banner"),
+  validateRequest({ params: uuidParamSchema, body: updateEventSchema }),
+  eventController.updateEvent,
 );
 
 // Delete event by ID
 router.delete(
-  '/:id',
-  passport.authenticate('jwt', { session: false }),
-  eventController.deleteEvent
+  "/:id",
+  requireAuth,
+  validateRequest({ params: uuidParamSchema }),
+  eventController.deleteEvent,
 );
 
 module.exports = router;

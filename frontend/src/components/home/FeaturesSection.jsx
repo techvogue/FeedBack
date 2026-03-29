@@ -18,14 +18,14 @@ export default function FeaturesSection({ features }) {
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6 }}
+                    transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
                     viewport={{ once: true }}
                     style={{ textAlign: 'center', marginBottom: '4rem' }}
                 >
                     <motion.div
                         initial={{ opacity: 0 }}
                         whileInView={{ opacity: 1 }}
-                        transition={{ duration: 0.8, delay: 0.1 }}
+                        transition={{ duration: 0.45, delay: 0.05, ease: 'easeOut' }}
                     >
                         <Typography
                             sx={{
@@ -44,7 +44,7 @@ export default function FeaturesSection({ features }) {
                     <motion.div
                         initial={{ opacity: 0 }}
                         whileInView={{ opacity: 1 }}
-                        transition={{ duration: 0.6, delay: 0.1 }}
+                        transition={{ duration: 0.45, delay: 0.05, ease: 'easeOut' }}
                     >
                         <Typography
                             component={motion.h2}
@@ -57,8 +57,8 @@ export default function FeaturesSection({ features }) {
                                 visible: {
                                     opacity: 1,
                                     transition: {
-                                        staggerChildren: 0.03,
-                                        delayChildren: 0.12,
+                                        staggerChildren: 0.02,
+                                        delayChildren: 0.06,
                                     },
                                 },
                             }}
@@ -102,9 +102,9 @@ export default function FeaturesSection({ features }) {
                                 className="feature-card"
                                 initial={{ opacity: 0, y: 28 }}
                                 whileInView={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.7, ease: 'easeOut', delay: idx * 0.08 }}
+                                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: idx * 0.06 }}
                                 viewport={{ once: true, amount: 0.25 }}
-                                whileHover={{ y: -10, transition: { duration: 0.3 } }}
+                                whileHover={{ y: -10, transition: { duration: 0.22, ease: 'easeOut' } }}
                                 style={{
                                     borderRadius: '16px',
                                     padding: '24px',
@@ -154,7 +154,7 @@ export default function FeaturesSection({ features }) {
                                 <motion.div
                                     initial={{ opacity: 0 }}
                                     whileInView={{ opacity: 1 }}
-                                    transition={{ duration: 0.5, delay: idx * 0.1 + 0.3 }}
+                                    transition={{ duration: 0.35, delay: idx * 0.08 + 0.18, ease: 'easeOut' }}
                                 >
                                     <Typography
                                         variant="h6"

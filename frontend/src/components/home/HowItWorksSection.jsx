@@ -19,7 +19,7 @@ export default function HowItWorksSection({ steps }) {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
           viewport={{ once: true }}
           style={{ textAlign: 'center', marginBottom: '4rem' }}
         >
@@ -38,7 +38,7 @@ export default function HowItWorksSection({ steps }) {
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
+            transition={{ duration: 0.45, delay: 0.05, ease: 'easeOut' }}
           >
             <Typography
               component={motion.h2}
@@ -51,8 +51,8 @@ export default function HowItWorksSection({ steps }) {
                 visible: {
                   opacity: 1,
                   transition: {
-                    staggerChildren: 0.03,
-                    delayChildren: 0.12,
+                    staggerChildren: 0.02,
+                    delayChildren: 0.06,
                   },
                 },
               }}
@@ -80,7 +80,7 @@ export default function HowItWorksSection({ steps }) {
               ))}
             </Typography>
           </motion.div>
-          
+
         </motion.div>
 
         <Box sx={{ maxWidth: '900px', mx: 'auto' }}>
@@ -93,7 +93,7 @@ export default function HowItWorksSection({ steps }) {
                 key={idx}
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: idx * 0.1 }}
+                transition={{ duration: 0.4, delay: idx * 0.07, ease: [0.22, 1, 0.36, 1] }}
                 viewport={{ once: true }}
                 style={{
                   display: 'flex',

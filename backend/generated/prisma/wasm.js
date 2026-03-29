@@ -136,7 +136,6 @@ exports.Prisma.EventScalarFieldEnum = {
   description: 'description',
   date: 'date',
   bannerUrl: 'bannerUrl',
-  ticketPrice: 'ticketPrice',
   ownerId: 'ownerId',
   createdAt: 'createdAt'
 };
@@ -153,20 +152,6 @@ exports.Prisma.FeedbackResponseScalarFieldEnum = {
   userId: 'userId',
   answers: 'answers',
   submittedAt: 'submittedAt'
-};
-
-exports.Prisma.TicketScalarFieldEnum = {
-  id: 'id',
-  eventId: 'eventId',
-  userId: 'userId',
-  ticketNumber: 'ticketNumber',
-  attendeeName: 'attendeeName',
-  attendeeEmail: 'attendeeEmail',
-  ticketPrice: 'ticketPrice',
-  stripePaymentIntentId: 'stripePaymentIntentId',
-  stripeSessionId: 'stripeSessionId',
-  status: 'status',
-  purchasedAt: 'purchasedAt'
 };
 
 exports.Prisma.SortOrder = {
@@ -193,19 +178,13 @@ exports.Prisma.JsonNullValueFilter = {
   JsonNull: Prisma.JsonNull,
   AnyNull: Prisma.AnyNull
 };
-exports.TicketStatus = exports.$Enums.TicketStatus = {
-  PENDING: 'PENDING',
-  CONFIRMED: 'CONFIRMED',
-  CANCELLED: 'CANCELLED',
-  REFUNDED: 'REFUNDED'
-};
+
 
 exports.Prisma.ModelName = {
   User: 'User',
   Event: 'Event',
   FeedbackForm: 'FeedbackForm',
-  FeedbackResponse: 'FeedbackResponse',
-  Ticket: 'Ticket'
+  FeedbackResponse: 'FeedbackResponse'
 };
 
 /**

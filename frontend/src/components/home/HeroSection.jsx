@@ -2,6 +2,8 @@ import { Box, Button, Container, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { motion } from 'framer-motion';
 
+void motion;
+
 export default function HeroSection({ onRegister }) {
     const theme = useTheme();
 
@@ -36,7 +38,7 @@ export default function HeroSection({ onRegister }) {
                         animate="visible"
                         variants={{
                             hidden: {},
-                            visible: { transition: { staggerChildren: 0.2 } },
+                            visible: { transition: { staggerChildren: 0.12 } },
                         }}
                     >
                         <motion.div
@@ -45,7 +47,7 @@ export default function HeroSection({ onRegister }) {
                                 visible: {
                                     opacity: 1,
                                     x: 0,
-                                    transition: { type: 'spring', stiffness: 100 },
+                                    transition: { type: 'spring', stiffness: 140, damping: 18 },
                                 },
                             }}
                         >
@@ -66,7 +68,7 @@ export default function HeroSection({ onRegister }) {
                         <motion.div
                             variants={{
                                 hidden: { opacity: 0, x: -50 },
-                                visible: { opacity: 1, x: 0, transition: { duration: 0.8 } },
+                                visible: { opacity: 1, x: 0, transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] } },
                             }}
                         >
                             <Typography
@@ -88,7 +90,7 @@ export default function HeroSection({ onRegister }) {
                         <motion.div
                             variants={{
                                 hidden: { opacity: 0, y: 50 },
-                                visible: { opacity: 1, y: 0, transition: { duration: 0.8 } },
+                                visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] } },
                             }}
                             style={{
                                 display: 'flex',
@@ -101,7 +103,7 @@ export default function HeroSection({ onRegister }) {
                             <motion.div
                                 whileHover={{ scale: 1.05, y: -2 }}
                                 whileTap={{ scale: 0.95 }}
-                                transition={{ type: 'spring', stiffness: 300 }}
+                                transition={{ type: 'spring', stiffness: 320, damping: 20 }}
                             >
                                 <Button
                                     variant="contained"
@@ -129,7 +131,7 @@ export default function HeroSection({ onRegister }) {
                     <motion.div
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        transition={{ type: 'spring', stiffness: 100, delay: 0.2 }}
+                        transition={{ type: 'spring', stiffness: 130, damping: 20, delay: 0.1 }}
                         style={{
                             display: 'flex',
                             alignItems: 'center',

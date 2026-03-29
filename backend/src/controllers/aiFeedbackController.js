@@ -1,26 +1,36 @@
 // backend/src/controllers/aiFeedbackController.js
-const { PrismaClient } = require("../../generated/prisma");
+const prisma = require("../prismaClient");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-const prisma = new PrismaClient();
 
-// Initialize Gemini AI
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
-exports.getAISummary = async (req, res) => {
+exports.getAISummary = async (req, res, next) => {
   try {
     const { eventId } = req.params;
+    const event = await prisma.event.findUnique({
+      where: { id: eventId },
+      select: {
+        id: true,
+        title: true,
+        ownerId: true,
+        feedbackForm: {
+          select: {
+            schema: true,
+          },
+        },
+      },
+    });
+
+    if (!event || !event.feedbackForm) {
+      return res.status(404).json({ message: "Event or form not found." });
+    }
+
+    if (event.ownerId !== req.user.id) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+
     const responses = await prisma.feedbackResponse.findMany({
       where: { eventId },
       select: { answers: true },
     });
-    const event = await prisma.event.findUnique({ where: { id: eventId } });
-    const feedbackForm = await prisma.feedbackForm.findUnique({
-      where: { eventId },
-    });
-
-    if (!event || !feedbackForm) {
-      return res.status(404).json({ message: "Event or form not found." });
-    }
 
     if (responses.length === 0) {
       return res.json({
@@ -28,7 +38,7 @@ exports.getAISummary = async (req, res) => {
 
 📈 Response Overview:
 • No responses received yet
-• ${feedbackForm.schema?.pages?.[0]?.elements?.length || 0} questions configured
+      • ${event.feedbackForm.schema?.pages?.[0]?.elements?.length || 0} questions configured
 
 💡 Next Steps:
 • Share the feedback form with attendees
@@ -36,12 +46,12 @@ exports.getAISummary = async (req, res) => {
 • Check back once responses are received
 
 Note: AI insights will be available once feedback is submitted.`,
-        aiStatus: 'no_data'
+        aiStatus: "no_data",
       });
     }
 
     // Process schema to extract questions
-    const rawSchema = feedbackForm.schema;
+    const rawSchema = event.feedbackForm.schema;
     let schema = [];
 
     if (Array.isArray(rawSchema)) {
@@ -49,7 +59,10 @@ Note: AI insights will be available once feedback is submitted.`,
     } else if (rawSchema && typeof rawSchema === "object") {
       if (Array.isArray(rawSchema.questions)) {
         schema = rawSchema.questions;
-      } else if (rawSchema.pages && Array.isArray(rawSchema.pages[0]?.elements)) {
+      } else if (
+        rawSchema.pages &&
+        Array.isArray(rawSchema.pages[0]?.elements)
+      ) {
         schema = rawSchema.pages[0].elements;
       } else {
         schema = [];
@@ -80,13 +93,13 @@ Note: AI insights will be available once feedback is submitted.`,
       .map(
         (q) =>
           `Q${q.number}: ${q.text} [${q.type}]
-${q.choices ? "Options: " + q.choices.map(c => typeof c === 'object' ? c.text : c).join(", ") : ""}
+${q.choices ? "Options: " + q.choices.map((c) => (typeof c === "object" ? c.text : c)).join(", ") : ""}
 ${
   q.answers && q.answers.length
     ? q.answers.map((a) => "- " + a).join("\n")
     : "-"
 }
-`
+`,
       )
       .join("\n");
 
@@ -111,22 +124,29 @@ Format your response in clear, professional English suitable for event organizer
 `;
 
     try {
+      const geminiApiKey =
+        process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY;
+      if (!geminiApiKey) {
+        throw new Error("GEMINI_API_KEY not configured");
+      }
+
       // Use Gemini Flash model
+      const genAI = new GoogleGenerativeAI(geminiApiKey);
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-      
+
       const result = await model.generateContent(prompt);
       const response = await result.response;
       const summary = response.text();
 
       console.log("[Gemini Flash response received]");
-      res.json({ 
+      res.json({
         summary,
-        aiStatus: 'success',
-        model: 'gemini-1.5-flash'
+        aiStatus: "success",
+        model: "gemini-1.5-flash",
       });
     } catch (geminiError) {
       console.error("[Gemini Flash error]", geminiError);
-      
+
       // Fallback to basic summary
       const totalResponses = responses.length;
       const questionCount = aiQuestions.length;
@@ -166,8 +186,8 @@ ${
   positiveCount > negativeCount
     ? "• Overall sentiment appears positive"
     : negativeCount > positiveCount
-    ? "• Some areas need attention"
-    : "• Mixed feedback received"
+      ? "• Some areas need attention"
+      : "• Mixed feedback received"
 }
 
 🔧 Suggestions:
@@ -178,18 +198,13 @@ ${
 Note: This is a basic summary. AI analysis is temporarily unavailable.
       `.trim();
 
-      res.json({ 
+      res.json({
         summary: basicSummary,
-        aiStatus: 'fallback',
-        error: geminiError.message
+        aiStatus: "fallback",
+        error: geminiError.message,
       });
     }
   } catch (e) {
-    console.error("[AI summary error]", e);
-    res.status(500).json({ 
-      message: "AI summary failed", 
-      error: e.message,
-      aiStatus: 'error'
-    });
+    next(e);
   }
 };

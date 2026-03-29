@@ -30,6 +30,7 @@
     "react-qr-code": "^2.0.18",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.7.1",
+    "react-toastify": "^11.0.5",
     "react-tsparticles": "^2.12.2",
     "survey-core": "^2.2.6",
     "survey-creator-core": "^2.2.6",

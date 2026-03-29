@@ -45,7 +45,7 @@ function AnimatedStatNumber({ value }) {
     useEffect(() => {
         if (!hasStarted) return;
 
-        const duration = 1500;
+        const duration = 1100;
         const startTime = performance.now();
         let animationFrameId;
 
@@ -121,14 +121,14 @@ export default function StatsSection({ stats }) {
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6 }}
+                    transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
                     viewport={{ once: true }}
                     style={{ textAlign: 'center', marginBottom: '4rem' }}
                 >
                     <motion.div
                         initial={{ opacity: 0 }}
                         whileInView={{ opacity: 1 }}
-                        transition={{ duration: 0.8, delay: 0.1 }}
+                        transition={{ duration: 0.45, delay: 0.05, ease: 'easeOut' }}
                     >
                         <Typography
                             sx={{
@@ -147,7 +147,7 @@ export default function StatsSection({ stats }) {
                     <motion.div
                         initial={{ opacity: 0 }}
                         whileInView={{ opacity: 1 }}
-                        transition={{ duration: 0.6, delay: 0.1 }}
+                        transition={{ duration: 0.45, delay: 0.05, ease: 'easeOut' }}
                     >
                         <Typography
                             component={motion.h2}
@@ -160,8 +160,8 @@ export default function StatsSection({ stats }) {
                                 visible: {
                                     opacity: 1,
                                     transition: {
-                                        staggerChildren: 0.03,
-                                        delayChildren: 0.12,
+                                        staggerChildren: 0.02,
+                                        delayChildren: 0.06,
                                     },
                                 },
                             }}
@@ -203,9 +203,9 @@ export default function StatsSection({ stats }) {
                             key={idx}
                             initial={{ opacity: 0, scale: 0.85 }}
                             whileInView={{ opacity: 1, scale: 1 }}
-                            transition={{ duration: 0.6, delay: idx * 0.12 }}
+                            transition={{ duration: 0.45, delay: idx * 0.08, ease: [0.22, 1, 0.36, 1] }}
                             viewport={{ once: true }}
-                            whileHover={{ scale: 1.05 }}
+                            whileHover={{ scale: 1.05, transition: { duration: 0.22, ease: 'easeOut' } }}
                             style={{
                                 padding: '32px 24px',
                                 borderRadius: '16px',
@@ -225,7 +225,7 @@ export default function StatsSection({ stats }) {
                                 <motion.div
                                     initial={{ opacity: 0, scale: 0 }}
                                     whileInView={{ opacity: 0.1, scale: 1 }}
-                                    transition={{ duration: 0.8, delay: idx * 0.12 + 0.2 }}
+                                    transition={{ duration: 0.5, delay: idx * 0.08 + 0.12, ease: 'easeOut' }}
                                     style={{
                                         position: 'absolute',
                                         width: '100px',

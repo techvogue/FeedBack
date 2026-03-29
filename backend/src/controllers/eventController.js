@@ -3,14 +3,12 @@
 // Only import PrismaClient, as manual Cloudinary upload is removed.
 // If you need cloudinary for other operations (e.g., deleting banners later), you can uncomment:
 // const cloudinary = require('../config/cloudinary');
-const { PrismaClient } = require('../../generated/prisma');
-
-const prisma = new PrismaClient();
+const prisma = require("../prismaClient");
 
 // Create Event (expecting 'banner' as multipart image field processed by multer-storage-cloudinary)
-exports.createEvent = async (req, res) => {
+exports.createEvent = async (req, res, next) => {
   try {
-    const { title, description, date, time, ticketPrice } = req.body;
+    const { title, description, date, time } = req.body;
     const ownerId = req.user.id; // Assuming authenticate middleware sets req.user
 
     let bannerUrl = null;
@@ -22,30 +20,21 @@ exports.createEvent = async (req, res) => {
       bannerUrl = req.file.path;
       console.log("Backend: Captured banner URL:", bannerUrl);
     } else {
-      console.warn("Backend: No banner file was provided or processed by Multer. bannerUrl will be null.");
+      console.warn(
+        "Backend: No banner file was provided or processed by Multer. bannerUrl will be null.",
+      );
     }
     // --- END FIX ---
 
     // Combine date and time
     const dateTime = new Date(`${date}T${time}`);
 
-    // Validate ticketPrice if provided
-    let validatedPrice = null;
-    if (ticketPrice !== undefined) {
-      const priceNum = parseFloat(ticketPrice);
-      if (isNaN(priceNum) || priceNum < 0) {
-        return res.status(400).json({ error: 'ticketPrice must be a positive number or zero' });
-      }
-      validatedPrice = priceNum;
-    }
-
     const event = await prisma.event.create({
       data: {
         title,
         description,
         date: dateTime,
-        bannerUrl: bannerUrl || '', // Save the obtained URL (or an empty string if none)
-        ticketPrice: validatedPrice,
+        bannerUrl: bannerUrl || "", // Save the obtained URL (or an empty string if none)
         owner: {
           connect: { id: ownerId },
         },
@@ -56,23 +45,22 @@ exports.createEvent = async (req, res) => {
             id: true,
             name: true,
             email: true,
-          }
-        }
-      }
+          },
+        },
+      },
     });
 
     res.status(201).json({
-      message: 'Event created successfully',
-      event
+      message: "Event created successfully",
+      event,
     });
   } catch (err) {
-    console.error('Create event error:', err);
-    res.status(500).json({ message: 'Failed to create event', error: err.message });
+    next(err);
   }
 };
 
 // List all events owned by the user (This part remains unchanged as it was correct)
-exports.getMyEvents = async (req, res) => {
+exports.getMyEvents = async (req, res, next) => {
   try {
     const events = await prisma.event.findMany({
       where: { ownerId: req.user.id },
@@ -82,23 +70,22 @@ exports.getMyEvents = async (req, res) => {
             id: true,
             name: true,
             email: true,
-          }
-        }
+          },
+        },
       },
       orderBy: {
-        date: 'desc'
-      }
+        date: "desc",
+      },
     });
 
     res.json(events);
   } catch (err) {
-    console.error('Get events error:', err);
-    res.status(500).json({ message: 'Failed to fetch events', error: err.message });
+    next(err);
   }
 };
 
 // Get all public events (no authentication required)
-exports.getPublicEvents = async (req, res) => {
+exports.getPublicEvents = async (req, res, next) => {
   try {
     const events = await prisma.event.findMany({
       include: {
@@ -107,23 +94,22 @@ exports.getPublicEvents = async (req, res) => {
             id: true,
             name: true,
             email: true,
-          }
-        }
+          },
+        },
       },
       orderBy: {
-        date: 'desc'
-      }
+        date: "desc",
+      },
     });
 
     res.json(events);
   } catch (err) {
-    console.error('Get public events error:', err);
-    res.status(500).json({ message: 'Failed to fetch events', error: err.message });
+    next(err);
   }
 };
 
 // Get event details by ID
-exports.getEventById = async (req, res) => {
+exports.getEventById = async (req, res, next) => {
   try {
     const event = await prisma.event.findUnique({
       where: { id: req.params.id },
@@ -133,36 +119,49 @@ exports.getEventById = async (req, res) => {
             id: true,
             name: true,
             email: true,
-          }
+          },
         },
-        feedbackForm: true
-      }
+        feedbackForm: {
+          select: {
+            id: true,
+            eventId: true,
+          },
+        },
+      },
     });
     if (!event) {
-      return res.status(404).json({ message: 'Event not found' });
+      return res.status(404).json({ message: "Event not found" });
     }
 
     res.json(event);
   } catch (err) {
-    console.error('Get event by ID error:', err);
-    res.status(500).json({ message: 'Failed to fetch event', error: err.message });
+    next(err);
   }
 };
 
 // Update event by ID
-exports.updateEvent = async (req, res) => {
+exports.updateEvent = async (req, res, next) => {
   try {
-    const { title, description, date, time, ticketPrice } = req.body;
+    const { title, description, date, time } = req.body;
     const eventId = req.params.id; // Remove parseInt since id is a String (UUID)
     const userId = req.user.id;
 
     // Find event and check ownership
-    const event = await prisma.event.findUnique({ where: { id: eventId } });
+    const event = await prisma.event.findUnique({
+      where: { id: eventId },
+      select: {
+        ownerId: true,
+        title: true,
+        description: true,
+        date: true,
+        bannerUrl: true,
+      },
+    });
     if (!event) {
-      return res.status(404).json({ message: 'Event not found' });
+      return res.status(404).json({ message: "Event not found" });
     }
     if (event.ownerId !== userId) {
-      return res.status(403).json({ message: 'Unauthorized' });
+      return res.status(403).json({ message: "Unauthorized" });
     }
 
     let bannerUrl = event.bannerUrl;
@@ -176,20 +175,6 @@ exports.updateEvent = async (req, res) => {
       dateTime = new Date(`${date}T${time}`);
     }
 
-    // Validate ticketPrice if provided
-    let validatedPrice = event.ticketPrice; // keep existing if not provided
-    if (ticketPrice !== undefined) {
-      if (ticketPrice === null || ticketPrice === '') {
-        validatedPrice = null; // allow clearing the price
-      } else {
-        const priceNum = parseFloat(ticketPrice);
-        if (isNaN(priceNum) || priceNum < 0) {
-          return res.status(400).json({ error: 'ticketPrice must be a positive number or zero' });
-        }
-        validatedPrice = priceNum;
-      }
-    }
-
     const updatedEvent = await prisma.event.update({
       where: { id: eventId },
       data: {
@@ -197,37 +182,41 @@ exports.updateEvent = async (req, res) => {
         description: description ?? event.description,
         date: dateTime,
         bannerUrl,
-        ticketPrice: validatedPrice,
       },
       include: {
         owner: {
-          select: { id: true, name: true, email: true }
-        }
-      }
+          select: { id: true, name: true, email: true },
+        },
+      },
     });
-    res.json({ message: 'Event updated successfully', event: updatedEvent });
+    res.json({ message: "Event updated successfully", event: updatedEvent });
   } catch (err) {
-    console.error('Update event error:', err);
-    res.status(500).json({ message: 'Failed to update event', error: err.message });
+    next(err);
   }
 };
 
 // Delete event by ID
-exports.deleteEvent = async (req, res) => {
+exports.deleteEvent = async (req, res, next) => {
   try {
     const eventId = req.params.id; // Remove parseInt since id is a String (UUID)
     const userId = req.user.id;
-    const event = await prisma.event.findUnique({ where: { id: eventId } });
+    const event = await prisma.event.findUnique({
+      where: { id: eventId },
+      select: { ownerId: true },
+    });
     if (!event) {
-      return res.status(404).json({ message: 'Event not found' });
+      return res.status(404).json({ message: "Event not found" });
     }
     if (event.ownerId !== userId) {
-      return res.status(403).json({ message: 'Unauthorized' });
+      return res.status(403).json({ message: "Unauthorized" });
     }
-    await prisma.event.delete({ where: { id: eventId } });
-    res.json({ message: 'Event deleted successfully' });
+    await prisma.$transaction([
+      prisma.feedbackResponse.deleteMany({ where: { eventId } }),
+      prisma.feedbackForm.deleteMany({ where: { eventId } }),
+      prisma.event.delete({ where: { id: eventId } }),
+    ]);
+    res.json({ message: "Event deleted successfully" });
   } catch (err) {
-    console.error('Delete event error:', err);
-    res.status(500).json({ message: 'Failed to delete event', error: err.message });
+    next(err);
   }
 };

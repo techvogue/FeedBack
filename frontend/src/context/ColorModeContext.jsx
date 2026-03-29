@@ -1,11 +1,8 @@
 // context/ColorModeContext.js
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getDesignTokens } from "../theme";
-
-export const ColorModeContext = createContext();
-
-export const useColorMode = () => useContext(ColorModeContext);
+import { ColorModeContext } from "./useColorMode";
 
 export const ColorModeProvider = ({ children }) => {
   // Initialize mode from localStorage or default to "light"

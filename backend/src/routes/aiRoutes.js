@@ -1,44 +1,32 @@
 // backend/src/routes/aiRoutes.js
-const express = require('express');
-const aiFeedbackController = require('../controllers/aiFeedbackController');
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+const express = require("express");
+const aiFeedbackController = require("../controllers/aiFeedbackController");
+const { requireAuth } = require("../middleware/auth");
+const { aiLimiter } = require("../middleware/rateLimit");
+const validateRequest = require("../middleware/validateRequest");
+const { aiSummaryParamSchema } = require("../validation/aiSchemas");
 
 const router = express.Router();
 
 // Get AI summary for feedback
-router.get('/ai-summary/:eventId', aiFeedbackController.getAISummary);
+router.get(
+  "/ai-summary/:eventId",
+  requireAuth,
+  aiLimiter,
+  validateRequest({ params: aiSummaryParamSchema }),
+  aiFeedbackController.getAISummary,
+);
 
 // Health check for Gemini API
-router.get('/ai-health', async (req, res) => {
-    try {
-        if (!process.env.GEMINI_API_KEY) {
-            return res.json({
-                status: 'unavailable',
-                geminiAvailable: false,
-                error: 'GEMINI_API_KEY not configured'
-            });
-        }
-
-        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-        // Test with a simple prompt
-        const result = await model.generateContent("Hello");
-        const response = await result.response;
-
-        res.json({
-            status: 'healthy',
-            geminiAvailable: true,
-            model: 'gemini-1.5-flash',
-            testResponse: response.text()
-        });
-    } catch (error) {
-        res.json({
-            status: 'unavailable',
-            geminiAvailable: false,
-            error: error.message
-        });
-    }
+router.get("/ai-health", requireAuth, aiLimiter, (req, res) => {
+  const configured = Boolean(
+    process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY,
+  );
+  res.json({
+    status: configured ? "healthy" : "unavailable",
+    geminiAvailable: configured,
+    model: configured ? "gemini-1.5-flash" : null,
+  });
 });
 
 module.exports = router;

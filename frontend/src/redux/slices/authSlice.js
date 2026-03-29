@@ -1,93 +1,101 @@
-
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import axiosInstance from '../../api/axiosInstance';
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import axiosInstance from "../../api/axiosInstance";
+import { getApiErrorMessage } from "../../utils/errorHandling";
 
 // Async thunks
 export const register = createAsyncThunk(
-  'auth/register',
+  "auth/register",
   async (userData, { rejectWithValue }) => {
     try {
       let response;
 
       // Check if userData is FormData (has profile picture)
       if (userData instanceof FormData) {
-        response = await axiosInstance.post('/auth/register', userData, {
+        response = await axiosInstance.post("/auth/register", userData, {
           headers: {
-            'Content-Type': 'multipart/form-data',
+            "Content-Type": "multipart/form-data",
           },
         });
       } else {
-        response = await axiosInstance.post('/auth/register', userData);
+        response = await axiosInstance.post("/auth/register", userData);
       }
 
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Registration failed');
+      return rejectWithValue(getApiErrorMessage(error, "Registration failed"));
     }
-  }
+  },
 );
 
 export const login = createAsyncThunk(
-  'auth/login',
+  "auth/login",
   async (credentials, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.post('/auth/login', credentials);
+      const response = await axiosInstance.post("/auth/login", credentials);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Login failed');
+      return rejectWithValue(getApiErrorMessage(error, "Login failed"));
     }
-  }
+  },
 );
 
 export const getProfile = createAsyncThunk(
-  'auth/getProfile',
+  "auth/getProfile",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.get('/auth/profile');
+      const response = await axiosInstance.get("/auth/profile");
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch profile');
+      return rejectWithValue(
+        getApiErrorMessage(error, "Failed to fetch profile"),
+      );
     }
-  }
+  },
 );
 
 export const updateProfilePicture = createAsyncThunk(
-  'auth/updateProfilePicture',
+  "auth/updateProfilePicture",
   async (file, { rejectWithValue }) => {
     try {
       const formData = new FormData();
-      formData.append('profilePicture', file);
+      formData.append("profilePicture", file);
 
-      const response = await axiosInstance.post('/auth/profile-picture', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
+      const response = await axiosInstance.post(
+        "/auth/profile-picture",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
         },
-      });
+      );
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to update profile picture');
+      return rejectWithValue(
+        getApiErrorMessage(error, "Failed to update profile picture"),
+      );
     }
-  }
+  },
 );
 
 const initialState = {
-  user: JSON.parse(localStorage.getItem('user')) || null,
-  token: localStorage.getItem('token') || null,
-  isAuthenticated: !!localStorage.getItem('token'),
+  user: JSON.parse(localStorage.getItem("user")) || null,
+  token: localStorage.getItem("token") || null,
+  isAuthenticated: !!localStorage.getItem("token"),
   loading: false,
   error: null,
 };
 
 const authSlice = createSlice({
-  name: 'auth',
+  name: "auth",
   initialState,
   reducers: {
     logout: (state) => {
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
     },
     clearError: (state) => {
       state.error = null;
@@ -97,8 +105,8 @@ const authSlice = createSlice({
       state.token = token;
       state.user = user;
       state.isAuthenticated = true;
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
     },
   },
   extraReducers: (builder) => {
@@ -113,8 +121,8 @@ const authSlice = createSlice({
         state.user = action.payload.user;
         state.token = action.payload.token;
         state.isAuthenticated = true;
-        localStorage.setItem('token', action.payload.token);
-        localStorage.setItem('user', JSON.stringify(action.payload.user));
+        localStorage.setItem("token", action.payload.token);
+        localStorage.setItem("user", JSON.stringify(action.payload.user));
       })
       .addCase(register.rejected, (state, action) => {
         state.loading = false;
@@ -130,8 +138,8 @@ const authSlice = createSlice({
         state.user = action.payload.user;
         state.token = action.payload.token;
         state.isAuthenticated = true;
-        localStorage.setItem('token', action.payload.token);
-        localStorage.setItem('user', JSON.stringify(action.payload.user));
+        localStorage.setItem("token", action.payload.token);
+        localStorage.setItem("user", JSON.stringify(action.payload.user));
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
@@ -145,7 +153,7 @@ const authSlice = createSlice({
       .addCase(getProfile.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload;
-        localStorage.setItem('user', JSON.stringify(action.payload));
+        localStorage.setItem("user", JSON.stringify(action.payload));
       })
       .addCase(getProfile.rejected, (state, action) => {
         state.loading = false;
@@ -159,7 +167,7 @@ const authSlice = createSlice({
       .addCase(updateProfilePicture.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload.user;
-        localStorage.setItem('user', JSON.stringify(action.payload.user));
+        localStorage.setItem("user", JSON.stringify(action.payload.user));
       })
       .addCase(updateProfilePicture.rejected, (state, action) => {
         state.loading = false;

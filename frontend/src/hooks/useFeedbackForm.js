@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import axios from '../api/axiosInstance';
+import { useCallback, useEffect, useRef, useState } from "react";
+import axios from "../api/axiosInstance";
 
 export const useFeedbackForm = (eventId) => {
   const [hasFeedbackForm, setHasFeedbackForm] = useState(false);
@@ -24,11 +24,11 @@ export const useFeedbackForm = (eventId) => {
     try {
       setIsChecking(true);
       setError(null);
-      
-      const response = await axios.get(`/feedback/forms/${eventId}`, {
-        signal: abortControllerRef.current.signal
+
+      await axios.get(`/feedback/forms/${eventId}`, {
+        signal: abortControllerRef.current.signal,
       });
-      
+
       // Only update state if this is still the current request
       if (!abortControllerRef.current.signal.aborted) {
         setHasFeedbackForm(true);
@@ -45,7 +45,7 @@ export const useFeedbackForm = (eventId) => {
         setError(null); // Clear any previous errors
       } else {
         // This is a real error
-        setError(err.message || 'Failed to check feedback form');
+        setError(err.message || "Failed to check feedback form");
         setHasFeedbackForm(false);
       }
     } finally {

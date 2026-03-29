@@ -1,8 +1,8 @@
 const prisma = require("../prismaClient");
-const cloudinary = require("../config/cloudinary");
+const AppError = require("../utils/AppError");
 
 // Create or update feedback form for an event
-exports.createOrUpdateFeedbackForm = async (req, res) => {
+exports.createOrUpdateFeedbackForm = async (req, res, next) => {
   try {
     const { eventId } = req.params;
     const { schema } = req.body;
@@ -11,6 +11,7 @@ exports.createOrUpdateFeedbackForm = async (req, res) => {
     // Check if event exists and user owns it
     const event = await prisma.event.findUnique({
       where: { id: eventId },
+      select: { ownerId: true },
     });
 
     if (!event) {
@@ -33,17 +34,14 @@ exports.createOrUpdateFeedbackForm = async (req, res) => {
       feedbackForm,
     });
   } catch (error) {
-    console.error("Create/Update feedback form error:", error);
-    res.status(500).json({ message: "Failed to save feedback form" });
+    next(error);
   }
 };
 
 // Get event details for feedback form (public)
-exports.getEventForFeedback = async (req, res) => {
+exports.getEventForFeedback = async (req, res, next) => {
   try {
     const { eventId } = req.params;
-
-    console.log(">>> [feedbackController] Getting event details for feedback form, eventId:", eventId);
 
     const event = await prisma.event.findUnique({
       where: { id: eventId },
@@ -57,24 +55,19 @@ exports.getEventForFeedback = async (req, res) => {
     });
 
     if (!event) {
-      console.log(">>> [feedbackController] Event not found for eventId:", eventId);
       return res.status(404).json({ message: "Event not found" });
     }
 
-    console.log(">>> [feedbackController] Event found:", event.title);
     res.json(event);
   } catch (error) {
-    console.error(">>> [feedbackController] Get event for feedback error:", error);
-    res.status(500).json({ message: "Failed to get event details" });
+    next(error);
   }
 };
 
 // Get feedback form for an event (public)
-exports.getFeedbackForm = async (req, res) => {
+exports.getFeedbackForm = async (req, res, next) => {
   try {
     const { eventId } = req.params;
-
-    console.log(">>> [feedbackController] Getting feedback form for eventId:", eventId);
 
     // First check if the event exists
     const event = await prisma.event.findUnique({
@@ -90,11 +83,8 @@ exports.getFeedbackForm = async (req, res) => {
     });
 
     if (!event) {
-      console.log(">>> [feedbackController] Event not found for eventId:", eventId);
       return res.status(404).json({ message: "Event not found" });
     }
-
-    console.log(">>> [feedbackController] Event found:", event.title);
 
     // Check if feedback form exists
     const feedbackForm = await prisma.feedbackForm.findUnique({
@@ -114,24 +104,21 @@ exports.getFeedbackForm = async (req, res) => {
     });
 
     if (!feedbackForm) {
-      console.log(">>> [feedbackController] No feedback form found for eventId:", eventId);
       return res.status(404).json({
         message: "No feedback form found for this event",
         event: event,
-        hasFeedbackForm: false
+        hasFeedbackForm: false,
       });
     }
 
-    console.log(">>> [feedbackController] Feedback form found, returning data");
     res.json(feedbackForm);
   } catch (error) {
-    console.error(">>> [feedbackController] Get feedback form error:", error);
-    res.status(500).json({ message: "Failed to get feedback form" });
+    next(error);
   }
 };
 
 // Check if user has already submitted feedback
-exports.checkFeedbackSubmission = async (req, res) => {
+exports.checkFeedbackSubmission = async (req, res, next) => {
   try {
     const { eventId } = req.params;
     const userId = req.user.id;
@@ -142,98 +129,43 @@ exports.checkFeedbackSubmission = async (req, res) => {
         eventId,
         userId,
       },
+      select: { id: true },
     });
 
     res.json({
       hasSubmitted: !!existingResponse,
     });
   } catch (error) {
-    console.error("Check feedback submission error:", error);
-    res.status(500).json({ message: "Failed to check submission status" });
+    next(error);
   }
 };
 
 // Submit feedback response (supports anonymous submissions)
-exports.submitFeedbackResponse = async (req, res) => {
+exports.submitFeedbackResponse = async (req, res, next) => {
   try {
     const { eventId } = req.params;
     const { answers } = req.body;
     const userId = req.user?.id; // Optional - can be undefined for anonymous submissions
 
-    console.log(">>> [feedbackController] Submitting feedback response:", {
-      eventId,
-      userId,
-      hasAnswers: !!answers,
-      answersKeys: answers ? Object.keys(answers) : [],
-      answersData: answers,
-    });
-
-    // Validate required fields
-    if (!eventId) {
-      return res.status(400).json({ message: "Event ID is required" });
-    }
-
-    // Validate UUID format
-    const uuidRegex =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    if (!uuidRegex.test(eventId)) {
-      return res.status(400).json({ message: "Invalid event ID format" });
-    }
-
-    if (!answers || typeof answers !== "object") {
-      return res
-        .status(400)
-        .json({ message: "Answers are required and must be an object" });
-    }
-
-    // Validate and sanitize answers data
-    try {
-      // Ensure answers is a valid JSON object
-      const sanitizedAnswers = JSON.parse(JSON.stringify(answers));
-      console.log(
-        ">>> [feedbackController] Sanitized answers:",
-        sanitizedAnswers
-      );
-    } catch (jsonError) {
-      console.error(
-        ">>> [feedbackController] Invalid JSON in answers:",
-        jsonError
-      );
-      return res.status(400).json({ message: "Invalid answers data format" });
-    }
-
-    // Test database connection
-    try {
-      await prisma.$connect();
-      console.log(">>> [feedbackController] Database connection successful");
-    } catch (dbError) {
-      console.error(
-        ">>> [feedbackController] Database connection failed:",
-        dbError
-      );
-      return res.status(500).json({
-        message: "Database connection failed",
-        error: dbError.message,
-      });
-    }
-
     // Check if event and feedback form exist
     const event = await prisma.event.findUnique({
       where: { id: eventId },
-      include: { feedbackForm: true },
+      select: {
+        id: true,
+        feedbackForm: {
+          select: { id: true },
+        },
+      },
     });
 
-    console.log(
-      ">>> [feedbackController] Event found:",
-      event ? { id: event.id, title: event.title } : null
-    );
-
     if (!event) {
-      return res.status(404).json({ message: "Event not found" });
+      return next(new AppError("Event not found", 404, "EVENT_NOT_FOUND"));
     }
 
     if (!event.feedbackForm) {
-      return res.status(404).json({ message: "Feedback form not found" });
+      return next(
+        new AppError("Feedback form not found", 404, "FEEDBACK_FORM_NOT_FOUND"),
+      );
     }
 
     // Check if user has already submitted feedback (only for authenticated users)
@@ -243,61 +175,54 @@ exports.submitFeedbackResponse = async (req, res) => {
           eventId,
           userId,
         },
+        select: { id: true },
       });
 
       if (existingResponse) {
-        return res.status(400).json({
-          message: "You have already submitted feedback for this event",
-        });
+        return next(
+          new AppError(
+            "You have already submitted feedback for this event",
+            409,
+            "DUPLICATE_FEEDBACK_SUBMISSION",
+          ),
+        );
       }
     }
 
-    // Save feedback response
-    console.log(
-      ">>> [feedbackController] Creating feedback response with data:",
-      {
-        eventId,
-        userId,
-        answers,
+    // Save feedback response and guard against concurrent duplicate submissions.
+    let feedbackResponse;
+    try {
+      feedbackResponse = await prisma.feedbackResponse.create({
+        data: {
+          eventId,
+          userId, // Can be null for anonymous submissions
+          answers,
+        },
+      });
+    } catch (createError) {
+      if (createError?.code === "P2002" && userId) {
+        return next(
+          new AppError(
+            "You have already submitted feedback for this event",
+            409,
+            "DUPLICATE_FEEDBACK_SUBMISSION",
+          ),
+        );
       }
-    );
-
-    const feedbackResponse = await prisma.feedbackResponse.create({
-      data: {
-        eventId,
-        userId, // Can be null for anonymous submissions
-        answers,
-      },
-    });
-
-    console.log(
-      ">>> [feedbackController] Feedback response created:",
-      feedbackResponse.id
-    );
+      throw createError;
+    }
 
     res.status(201).json({
       message: "Feedback submitted successfully",
       feedbackResponse,
     });
   } catch (error) {
-    console.error(
-      ">>> [feedbackController] Submit feedback response error:",
-      error
-    );
-    console.error(">>> [feedbackController] Error details:", {
-      message: error.message,
-      code: error.code,
-      meta: error.meta,
-      stack: error.stack,
-    });
-    res
-      .status(500)
-      .json({ message: "Failed to submit feedback", error: error.message });
+    next(error);
   }
 };
 
 // Get feedback responses for an event (owner only)
-exports.getFeedbackResponses = async (req, res) => {
+exports.getFeedbackResponses = async (req, res, next) => {
   try {
     const { eventId } = req.params;
     const userId = req.user.id;
@@ -305,9 +230,8 @@ exports.getFeedbackResponses = async (req, res) => {
     // Check if event exists and user owns it
     const event = await prisma.event.findUnique({
       where: { id: eventId },
+      select: { ownerId: true },
     });
-
-    console.log(">>> [feedbackController] Event found:", event);
 
     if (!event) {
       return res.status(404).json({ message: "Event not found" });
@@ -319,7 +243,12 @@ exports.getFeedbackResponses = async (req, res) => {
 
     const responses = await prisma.feedbackResponse.findMany({
       where: { eventId },
-      include: {
+      select: {
+        id: true,
+        eventId: true,
+        userId: true,
+        answers: true,
+        submittedAt: true,
         user: {
           select: {
             id: true,
@@ -333,13 +262,12 @@ exports.getFeedbackResponses = async (req, res) => {
 
     res.json(responses);
   } catch (error) {
-    console.error("Get feedback responses error:", error);
-    res.status(500).json({ message: "Failed to get feedback responses" });
+    next(error);
   }
 };
 
 // Upload file for feedback response
-exports.uploadFeedbackFile = async (req, res) => {
+exports.uploadFeedbackFile = async (req, res, next) => {
   try {
     if (!req.file) {
       return res.status(400).json({
@@ -356,7 +284,7 @@ exports.uploadFeedbackFile = async (req, res) => {
       return res.status(413).json({
         message: "File too large",
         error: `File size (${(file.size / (1024 * 1024)).toFixed(
-          2
+          2,
         )}MB) exceeds the maximum allowed size of 5MB`,
       });
     }
@@ -371,13 +299,6 @@ exports.uploadFeedbackFile = async (req, res) => {
 
     const fileUrl = file.path;
 
-    console.log(">>> [feedbackController] File uploaded successfully:", {
-      originalName: file.originalname,
-      size: file.size,
-      mimetype: file.mimetype,
-      url: fileUrl,
-    });
-
     res.json({
       message: "File uploaded successfully",
       fileUrl,
@@ -385,42 +306,36 @@ exports.uploadFeedbackFile = async (req, res) => {
       fileSize: file.size,
     });
   } catch (error) {
-    console.error(
-      ">>> [feedbackController] Upload feedback file error:",
-      error
-    );
-
     // Handle specific error types
-    if (error.message.includes("File type not supported")) {
+    if (error.message?.includes("File type not supported")) {
       return res.status(400).json({
         message: "Invalid file type",
         error: error.message,
       });
     }
 
-    if (error.message.includes("File format not supported")) {
+    if (error.message?.includes("File format not supported")) {
       return res.status(400).json({
         message: "Invalid file format",
         error: error.message,
       });
     }
 
-    res.status(500).json({
-      message: "Failed to upload file",
-      error:
-        "An unexpected error occurred while uploading the file. Please try again.",
-    });
+    next(error);
   }
 };
 
 // Delete feedback form and all responses for an event (owner only)
-exports.deleteFeedbackFormAndResponses = async (req, res) => {
+exports.deleteFeedbackFormAndResponses = async (req, res, next) => {
   try {
     const { eventId } = req.params;
     const userId = req.user.id;
 
     // Check if event exists and user owns it
-    const event = await prisma.event.findUnique({ where: { id: eventId } });
+    const event = await prisma.event.findUnique({
+      where: { id: eventId },
+      select: { ownerId: true },
+    });
     if (!event) {
       return res.status(404).json({ message: "Event not found" });
     }
@@ -428,50 +343,43 @@ exports.deleteFeedbackFormAndResponses = async (req, res) => {
       return res.status(403).json({ message: "Unauthorized" });
     }
 
-    // Delete all feedback responses for this event
-    await prisma.feedbackResponse.deleteMany({ where: { eventId } });
-    // Delete the feedback form for this event
-    await prisma.feedbackForm.deleteMany({ where: { eventId } });
+    // Run both destructive operations atomically to avoid partial deletes.
+    await prisma.$transaction([
+      prisma.feedbackResponse.deleteMany({ where: { eventId } }),
+      prisma.feedbackForm.deleteMany({ where: { eventId } }),
+    ]);
 
     res.json({
       message: "Feedback form and all responses deleted successfully.",
     });
   } catch (error) {
-    console.error("Delete feedback form and responses error:", error);
-    res
-      .status(500)
-      .json({ message: "Failed to delete feedback form and responses" });
+    next(error);
   }
 };
 
 // Health check for feedback system
-exports.healthCheck = async (req, res) => {
+exports.healthCheck = async (req, res, next) => {
   try {
     res.json({
-      status: 'OK',
-      message: 'Feedback system is running',
-      timestamp: new Date().toISOString()
+      status: "OK",
+      message: "Feedback system is running",
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    res.status(500).json({
-      status: 'ERROR',
-      message: 'Feedback system error',
-      error: error.message
-    });
+    next(error);
   }
 };
 
 // Create a default feedback form for an event
-exports.createDefaultFeedbackForm = async (req, res) => {
+exports.createDefaultFeedbackForm = async (req, res, next) => {
   try {
     const { eventId } = req.params;
     const userId = req.user.id;
 
-    console.log(">>> [feedbackController] Creating default feedback form for eventId:", eventId);
-
     // Check if event exists and user owns it
     const event = await prisma.event.findUnique({
       where: { id: eventId },
+      select: { ownerId: true },
     });
 
     if (!event) {
@@ -479,16 +387,22 @@ exports.createDefaultFeedbackForm = async (req, res) => {
     }
 
     if (event.ownerId !== userId) {
-      return res.status(403).json({ message: "Unauthorized - you can only create feedback forms for your own events" });
+      return res.status(403).json({
+        message:
+          "Unauthorized - you can only create feedback forms for your own events",
+      });
     }
 
     // Check if feedback form already exists
     const existingForm = await prisma.feedbackForm.findUnique({
       where: { eventId },
+      select: { id: true },
     });
 
     if (existingForm) {
-      return res.status(400).json({ message: "Feedback form already exists for this event" });
+      return res
+        .status(400)
+        .json({ message: "Feedback form already exists for this event" });
     }
 
     // Create a default feedback form schema
@@ -505,14 +419,14 @@ exports.createDefaultFeedbackForm = async (req, res) => {
               inputType: "number",
               min: 1,
               max: 10,
-              defaultValue: 5
+              defaultValue: 5,
             },
             {
               type: "comment",
               name: "feedback",
               title: "Please share your feedback about this event",
               isRequired: true,
-              maxLength: 1000
+              maxLength: 1000,
             },
             {
               type: "radiogroup",
@@ -522,19 +436,20 @@ exports.createDefaultFeedbackForm = async (req, res) => {
               choices: [
                 { value: "yes", text: "Yes, definitely!" },
                 { value: "maybe", text: "Maybe, with some improvements" },
-                { value: "no", text: "No, I wouldn't recommend it" }
-              ]
+                { value: "no", text: "No, I wouldn't recommend it" },
+              ],
             },
             {
               type: "comment",
               name: "suggestions",
-              title: "What suggestions do you have for improving future events?",
+              title:
+                "What suggestions do you have for improving future events?",
               isRequired: false,
-              maxLength: 500
-            }
-          ]
-        }
-      ]
+              maxLength: 500,
+            },
+          ],
+        },
+      ],
     };
 
     // Create the feedback form
@@ -556,14 +471,11 @@ exports.createDefaultFeedbackForm = async (req, res) => {
       },
     });
 
-    console.log(">>> [feedbackController] Default feedback form created successfully");
-
     res.status(201).json({
       message: "Default feedback form created successfully",
       feedbackForm,
     });
   } catch (error) {
-    console.error(">>> [feedbackController] Create default feedback form error:", error);
-    res.status(500).json({ message: "Failed to create default feedback form" });
+    next(error);
   }
 };
