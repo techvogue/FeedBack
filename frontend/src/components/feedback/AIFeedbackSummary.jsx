@@ -53,11 +53,12 @@ const AIFeedbackSummary = ({ eventId }) => {
         setIsTyping(false);
 
         const response = await axiosInstance.get(`/ai-summary/${eventId}`);
-        const { summary: aiSummary, aiStatus: status, model: aiModel } = response.data;
+        const { summary: aiSummary, aiStatus: status, model: aiModel, error: apiError } = response.data;
 
         setSummary(aiSummary);
         setAiStatus(status);
         setModel(aiModel);
+        if (apiError) setError(apiError);
       } catch (err) {
         console.error('AI Summary fetch error:', err);
         setError(err.response?.data?.message || 'Failed to load AI summary');
@@ -204,6 +205,11 @@ const AIFeedbackSummary = ({ eventId }) => {
             <strong>AI Analysis Unavailable:</strong> Showing basic summary.
             This may be due to API limits or temporary service issues.
           </Typography>
+          {error && (
+            <Typography variant="caption" sx={{ display: 'block', mt: 1, opacity: 0.8 }}>
+              Technical Details: {error}
+            </Typography>
+          )}
         </Alert>
       )}
 

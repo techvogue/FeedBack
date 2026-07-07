@@ -89,6 +89,13 @@ export const getDesignTokens = (mode) => ({
         },
       },
     },
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          borderRadius: 0,
+        },
+      },
+    },
     MuiButton: {
       styleOverrides: {
         root: {
