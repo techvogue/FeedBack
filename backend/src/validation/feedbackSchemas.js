@@ -5,13 +5,13 @@ const eventIdParamSchema = z.object({
 });
 
 const feedbackFormSchema = z.object({
-  schema: z.record(z.any()).refine((value) => !Array.isArray(value), {
+  schema: z.record(z.string(), z.any()).refine((value) => !Array.isArray(value), {
     message: "schema must be an object",
   }),
 });
 
 const submitFeedbackSchema = z.object({
-  answers: z.record(z.any()).refine((value) => !Array.isArray(value), {
+  answers: z.record(z.string(), z.any()).refine((value) => !Array.isArray(value), {
     message: "answers must be an object",
   }),
 });

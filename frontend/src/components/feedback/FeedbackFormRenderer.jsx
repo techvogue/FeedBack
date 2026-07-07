@@ -2,8 +2,10 @@ import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Model } from 'survey-core';
 import 'survey-core/survey-core.min.css';
+import { LayeredLight, LayeredDark } from 'survey-core/themes';
 import { Survey } from 'survey-react-ui';
 import axios from '../../api/axiosInstance';
+import { useTheme } from '@mui/material';
 
 // Constants
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -25,6 +27,7 @@ const ALLOWED_FILE_TYPES = [
 
 const FeedbackFormRenderer = ({ eventId, onComplete }) => {
   const { user } = useSelector((state) => state.auth);
+  const muiTheme = useTheme();
 
   // State management
   const [survey, setSurvey] = useState(null);
@@ -129,6 +132,7 @@ const FeedbackFormRenderer = ({ eventId, onComplete }) => {
       }
 
       // Configure survey model
+      surveyModel.applyTheme(muiTheme.palette.mode === 'dark' ? LayeredDark : LayeredLight);
       surveyModel.showQuestionNumbers = false;
       surveyModel.showProgressBar = false;
       surveyModel.allowCompleteSurveyAutomatic = false;
@@ -248,7 +252,7 @@ const FeedbackFormRenderer = ({ eventId, onComplete }) => {
     } finally {
       setLoading(false);
     }
-  }, [eventId, onComplete, user, validateFile, showError]);
+  }, [eventId, onComplete, user, validateFile, showError, muiTheme.palette.mode]);
 
   useEffect(() => {
     loadForm();

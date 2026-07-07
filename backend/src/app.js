@@ -20,6 +20,7 @@ const feedbackRoutes = require("./routes/feedback");
 const aiRoutes = require("./routes/aiRoutes");
 
 const app = express();
+app.set("trust proxy", 1);
 const isProduction = process.env.NODE_ENV === "production";
 
 if (!process.env.JWT_SECRET) {
