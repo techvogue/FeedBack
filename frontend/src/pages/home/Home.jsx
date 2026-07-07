@@ -6,8 +6,7 @@ import FeaturesSection from '../../components/home/FeaturesSection';
 import HeroSection from '../../components/home/HeroSection';
 import HowItWorksSection from '../../components/home/HowItWorksSection';
 import StatsSection from '../../components/home/StatsSection';
-import TestimonialsSection from '../../components/home/TestimonialsSection';
-import { features, stats, steps, testimonials } from '../../components/home/homeData';
+import { features, stats, steps } from '../../components/home/homeData';
 import { setPageMeta } from '../../utils/seo';
 
 export default function LandingPage() {
@@ -38,7 +37,6 @@ export default function LandingPage() {
       <FeaturesSection features={features} />
       <StatsSection stats={stats} />
       <HowItWorksSection steps={steps} />
-      <TestimonialsSection testimonials={testimonials} />
     </Box>
   );
 }
