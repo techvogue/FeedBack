@@ -132,17 +132,29 @@ Format your response in clear, professional English suitable for event organizer
 
       // Use Gemini Flash model
       const genAI = new GoogleGenerativeAI(geminiApiKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      
+      let summary;
+      let usedModel = "gemini-1.5-flash-latest";
 
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const summary = response.text();
+      try {
+        const model = genAI.getGenerativeModel({ model: usedModel });
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        summary = response.text();
+      } catch (firstError) {
+        console.log(`[Gemini] ${usedModel} failed, trying gemini-pro...`);
+        usedModel = "gemini-pro";
+        const fallbackModel = genAI.getGenerativeModel({ model: usedModel });
+        const result = await fallbackModel.generateContent(prompt);
+        const response = await result.response;
+        summary = response.text();
+      }
 
-      console.log("[Gemini Flash response received]");
+      console.log(`[Gemini response received via ${usedModel}]`);
       res.json({
         summary,
         aiStatus: "success",
-        model: "gemini-1.5-flash",
+        model: usedModel,
       });
     } catch (geminiError) {
       console.error("[Gemini Flash error]", geminiError);
