@@ -130,24 +130,37 @@ Format your response in clear, professional English suitable for event organizer
         throw new Error("GEMINI_API_KEY not configured");
       }
 
-      // Use Gemini Flash model
       const genAI = new GoogleGenerativeAI(geminiApiKey);
-      
       let summary;
-      let usedModel = "gemini-1.5-flash-latest";
+      let usedModel = "gemini-1.5-flash";
 
       try {
+        // Dynamically fetch available models to avoid 404 errors with different keys
+        const axios = require('axios');
+        const modelsRes = await axios.get(`https://generativelanguage.googleapis.com/v1beta/models?key=${geminiApiKey}`);
+        
+        // Find the first model that supports generateContent and contains 'flash' or 'pro'
+        const availableModels = modelsRes.data.models || [];
+        const validModel = availableModels.find(m => 
+          m.supportedGenerationMethods?.includes('generateContent') &&
+          m.name.includes('gemini')
+        );
+
+        if (validModel) {
+          // m.name looks like "models/gemini-1.5-flash", we just need the end part
+          usedModel = validModel.name.replace('models/', '');
+          console.log(`[Gemini] Auto-detected supported model: ${usedModel}`);
+        } else {
+          console.log(`[Gemini] No valid model found in API response, defaulting to gemini-1.5-flash`);
+        }
+
         const model = genAI.getGenerativeModel({ model: usedModel });
         const result = await model.generateContent(prompt);
         const response = await result.response;
         summary = response.text();
       } catch (firstError) {
-        console.log(`[Gemini] ${usedModel} failed, trying gemini-pro...`);
-        usedModel = "gemini-pro";
-        const fallbackModel = genAI.getGenerativeModel({ model: usedModel });
-        const result = await fallbackModel.generateContent(prompt);
-        const response = await result.response;
-        summary = response.text();
+        console.error(`[Gemini] Core generation failed with ${usedModel}:`, firstError.message);
+        throw firstError; // Throw so it triggers the fallback UI
       }
 
       console.log(`[Gemini response received via ${usedModel}]`);
