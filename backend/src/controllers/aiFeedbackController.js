@@ -105,22 +105,35 @@ ${
 
     // Create Gemini prompt
     const prompt = `
-You are an AI assistant analyzing event feedback. Please provide a comprehensive analysis.
+You are an expert Data Analyst specializing in event feedback. Your goal is to extract highly actionable insights from the provided attendee responses.
 
 Event: "${event.title}"
 
 QUESTIONS AND RESPONSES:
 ${questionsBlock}
 
-Please provide a structured analysis with the following sections:
+Analyze the data and provide a structured report using EXACTLY the following Markdown headings:
 
-1. **Overall Sentiment**: Analyze the overall sentiment with specific reasons
-2. **Positive Aspects**: List the top 3-5 positive aspects mentioned
-3. **Areas for Improvement**: List the top 3-5 areas that need improvement
-4. **Actionable Recommendations**: Provide 3-5 specific, actionable recommendations for organizers
-5. **Key Insights**: Share 3 key takeaways from the feedback
+### Overall Sentiment
+Provide a brief analysis of the general mood and satisfaction of the attendees.
 
-Format your response in clear, professional English suitable for event organizers. Use bullet points and clear headings for each section.
+### Positive Highlights
+Use bullet points to list the most praised aspects of the event. (Do not invent highlights if none exist).
+
+### Areas for Improvement
+Use bullet points to identify common complaints, issues, or friction points.
+
+### Actionable Recommendations
+Provide specific, data-backed recommendations for the organizers to improve their next event.
+
+### Key Insights
+Share the most valuable takeaways.
+
+CRITICAL INSTRUCTIONS:
+- Base your analysis STRICTLY on the provided responses. Do not hallucinate or invent data.
+- If the sample size of responses is very low, briefly acknowledge that the data is limited.
+- Do NOT wrap your response in \`\`\`markdown blocks.
+- Keep the tone professional, objective, and constructive.
 `;
 
     try {
