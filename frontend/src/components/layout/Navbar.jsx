@@ -133,6 +133,7 @@ const Navbar = () => {
       <AppBar
         position="fixed"
         sx={{
+          zIndex: 1100, // Ensure it stays on top
           top: 16, // floating gap from top
           left: '50%',
           width: { xs: '95%', md: '90%', lg: '1200px' }, // max width constraint
