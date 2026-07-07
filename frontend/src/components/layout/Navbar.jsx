@@ -133,18 +133,14 @@ const Navbar = () => {
       <AppBar
         position="fixed"
         sx={{
-          zIndex: 1100, // Ensure it stays on top
-          top: 16, // floating gap from top
-          left: '50%',
-          width: { xs: '95%', md: '90%', lg: '1200px' }, // max width constraint
-          transform: showNavbar ? 'translate(-50%, 0)' : 'translate(-50%, -150%)',
-          transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-          backgroundColor: mode === 'dark' ? 'rgba(18, 18, 18, 0.85)' : 'rgba(255, 255, 255, 0.85)',
+          zIndex: 1100,
+          transform: showNavbar ? 'translateY(0)' : 'translateY(-100%)',
+          transition: 'transform 0.3s ease-in-out',
+          backgroundColor: mode === 'dark' ? 'black' : 'white',
           color: mode === 'dark' ? 'white' : 'black',
-          backdropFilter: 'blur(12px)',
-          border: `1px solid ${mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-          boxShadow: mode === 'dark' ? '0 8px 32px rgba(0,0,0,0.4)' : '0 8px 32px rgba(0,0,0,0.1)',
-          borderRadius: 4, // floating pill shape
+          backdropFilter: 'blur(8px)',
+          borderBottom: `1px solid ${mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+          boxShadow: mode === 'dark' ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.1)',
         }}
         elevation={0}
       >
