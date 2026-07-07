@@ -1,5 +1,5 @@
 // App.jsx
-import { Box, CircularProgress, Toolbar } from '@mui/material';
+import { Box, CircularProgress, Skeleton, Toolbar } from '@mui/material';
 import { Suspense, lazy } from 'react';
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 
@@ -22,14 +22,22 @@ const Register = lazy(() => import('./pages/auth/Register'));
 const RouteFallback = () => (
   <Box
     sx={{
-      minHeight: '50vh',
+      minHeight: '80vh',
       display: 'flex',
+      flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      width: '100%'
+      width: '100%',
+      p: 4,
+      gap: 2
     }}
   >
-    <CircularProgress size={44} />
+    <Skeleton variant="rectangular" width="80%" height={200} sx={{ borderRadius: 4 }} />
+    <Box sx={{ display: 'flex', gap: 2, width: '80%' }}>
+      <Skeleton variant="rectangular" width="30%" height={150} sx={{ borderRadius: 4 }} />
+      <Skeleton variant="rectangular" width="30%" height={150} sx={{ borderRadius: 4 }} />
+      <Skeleton variant="rectangular" width="30%" height={150} sx={{ borderRadius: 4 }} />
+    </Box>
   </Box>
 );
 

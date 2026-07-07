@@ -51,11 +51,41 @@ export const getDesignTokens = (mode) => ({
         },
       }),
   },
+  typography: {
+    fontFamily: '"Inter", "Plus Jakarta Sans", "Roboto", "Helvetica", "Arial", sans-serif',
+    h1: {
+      fontWeight: 800,
+      letterSpacing: '-0.025em',
+    },
+    h2: {
+      fontWeight: 700,
+      letterSpacing: '-0.02em',
+    },
+    h3: {
+      fontWeight: 700,
+      letterSpacing: '-0.015em',
+    },
+    h4: {
+      fontWeight: 600,
+      letterSpacing: '-0.01em',
+    },
+    h5: {
+      fontWeight: 600,
+    },
+    h6: {
+      fontWeight: 600,
+    },
+    button: {
+      textTransform: 'none',
+      fontWeight: 600,
+    },
+  },
   components: {
     MuiPaper: {
       styleOverrides: {
         root: {
           backgroundImage: 'none',
+          borderRadius: 16, // Standardize to 16px (matches MUI borderRadius 2 in some setups, but explicit here)
         },
       },
     },
@@ -63,6 +93,7 @@ export const getDesignTokens = (mode) => ({
       styleOverrides: {
         root: {
           textTransform: 'none',
+          borderRadius: 8, // Standardize buttons to 8px
         },
       },
     },

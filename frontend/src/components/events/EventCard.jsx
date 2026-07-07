@@ -56,7 +56,7 @@ const EventCard = ({ event, onDelete, onEdit, onEventClick }) => {
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
-        height: 320,
+        height: '100%',
         width: '100%',
         minWidth: 260,
         maxWidth: 400,
@@ -68,10 +68,10 @@ const EventCard = ({ event, onDelete, onEdit, onEventClick }) => {
         border: `1px solid ${theme.palette.divider}`,
         cursor: 'pointer',
         '&:hover': {
-          transform: 'translateY(-6px) scale(1.02)',
+          transform: 'translateY(-4px)',
           boxShadow: theme.palette.mode === 'dark'
-            ? '0 6px 20px rgba(0,0,0,0.4)'
-            : '0 6px 20px rgba(0,0,0,0.2)',
+            ? '0 12px 24px rgba(0,0,0,0.5)'
+            : '0 12px 24px rgba(0,0,0,0.15)',
         },
       }}
     >
@@ -122,7 +122,6 @@ const EventCard = ({ event, onDelete, onEdit, onEventClick }) => {
             display: '-webkit-box',
             WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
-            minHeight: 40,
           }}
         >
           {event.description}
